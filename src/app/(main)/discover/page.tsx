@@ -1,15 +1,12 @@
-import { NotBuiltYet, ScreenHeader } from "@/components/shared/screen";
+import { Suspense } from "react";
+import { DiscoverView } from "@/features/food-search/discover-view";
 
+// useSearchParams needs a Suspense boundary in a static export: the meal in
+// ?meal= is only known in the browser.
 export default function DiscoverPage() {
   return (
-    <>
-      <ScreenHeader title="Discover" />
-      <div className="space-y-3">
-        <NotBuiltYet heading="Search foods">
-          Find foods by English or Tagalog name, from kanin and saging to sinigang, kare-kare and pandesal.
-        </NotBuiltYet>
-        <NotBuiltYet heading="Recent and saved">Foods you logged lately and the ones you saved.</NotBuiltYet>
-      </div>
-    </>
+    <Suspense>
+      <DiscoverView />
+    </Suspense>
   );
 }

@@ -39,9 +39,36 @@ Five tabs fixed to the bottom: Home, Diary, Discover, Progress, Profile. Labels 
 
 Icons are Lucide at 1.6 stroke, 2.1 when active. They are used only in the nav, where a picture helps people find a tab faster.
 
+## Screens
+
+| Screen | The question it answers | Main pieces |
+| --- | --- | --- |
+| Home | How much can I still eat today? | kcal left as the largest number, one calorie bar, three macro bars, meals with an add button each |
+| Diary | What did I eat, and is it right? | day switcher, day totals, meals with every entry; tapping an entry opens it for editing |
+| Discover | What is this food worth? | search by English or Tagalog name, type filters, recent foods, Filipino dishes |
+| Food sheet | How much am I adding? | live kcal and macros for the chosen serving and quantity, serving choice or grams, meal, one primary button |
+| Progress | Am I close to my targets over time? | 7-day bars against a dashed target line, 30-day grid of days within target, today's macro split |
+| Profile | What are my targets and details? | sign-in, daily targets, optional body details, where the numbers come from |
+
+Rules that came out of building them:
+
+- Over target is never shown in the accent green. Bars past 100% fill in ink, and the summary says "over target" in words.
+- Today is still in progress, so it is drawn on charts but left out of averages and counts.
+- Nutrients without a source value say "No data for this food" instead of showing 0.
+- Estimated foods say so in every list row and in the food sheet.
+- Lists are full-width rows, not cards. Cards are kept for the calorie summary and the sign-in panel, the two things that should stand apart.
+
+## Shared components
+
+`components/ui`: `ProgressBar` (aria progressbar, ink past 100%), `Sheet` (native `<dialog>`, so focus trapping and Escape need no library), `Stepper` (half-serving steps, 44 px buttons), `ChoiceGroup` (radio semantics, wraps instead of scrolling sideways). `components/shared/screen.tsx`: `ScreenHeader`, `SectionTitle`, `SampleDataNote`.
+
+## Sample data during design
+
+Until a screen reads from Supabase it uses `src/fixtures/sample-data.ts`. Food values there are copied from the real catalog and run through the same calculator as the server, so every number is true for that food. The diary, targets and history are made up, and every screen that shows them carries a "Sample data" note. Buttons that would save something say "not connected yet" when tapped. Wiring a screen means deleting its fixture import and its note.
+
 ## Motion
 
-Colour transitions of 150 ms on interactive elements, nothing else. Nothing loops or bounces.
+Colour transitions of 150 ms on interactive elements, bar widths ease over 300 ms when a value changes, and the food sheet rises 24 px over 200 ms (off with reduced motion). Nothing loops or bounces.
 
 ## Honesty rules for screens
 

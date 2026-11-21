@@ -9,7 +9,7 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 02 | Supabase schema, RLS, food logging functions, reference seed | Done, live on Supabase |
 | 04 (backend) | Filipino catalog: 24 dishes as recipe estimates, search, recents, favorites | Done, live on Supabase |
 | 00 | Next.js static export, Capacitor with Android, Tailwind, env validation, Supabase client | Done |
-| 01 | Design tokens and bottom navigation done; five screens are placeholders that say "Not built yet" | In progress |
+| 01 | All five screens and the food sheet designed and interactive, on labelled sample data (see `docs/design.md`) | Done |
 | 03, 05 to 08 | Auth flows, diary UI, analytics, offline sync, store builds | Not started |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
@@ -91,7 +91,10 @@ The catalog is readable by signed-in users and writable only through migrations 
 ```text
 src/
   app/               routes: (main)/ holds Home (/), diary, discover, progress, profile
-  components/        navigation/ and shared/ UI
+  components/        ui/ primitives, navigation/, shared/ screen parts
+  features/          dashboard, food-diary, food-search, nutrition-history, profile
+  fixtures/          labelled sample data used until screens read from Supabase
+  hooks/ utils/      device date, number and date formatting
   domain/nutrition/  client copy of the server's nutrition formula
   infrastructure/    Supabase client and env validation
   types/             generated database types
@@ -109,7 +112,7 @@ supabase/
 AGENTS.md            rules for anyone (human or agent) writing code here
 ```
 
-`src/features/` and `src/services/repositories/` arrive with the first screen that reads data.
+`src/services/repositories/` arrives with the first screen that reads data.
 
 ## Working on the backend
 
