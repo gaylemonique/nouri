@@ -1,0 +1,504 @@
+{
+  "_about": "Recipe estimates for Filipino dishes. Ingredient weights are raw, edible portion (no bones, peels or shells). fdc = USDA FoodData Central SR Legacy id. yield_g = weight of the finished dish. fat_removed_g = rendered fat poured off or left in frying oil. oil absorbed in deep frying is listed as its own ingredient. See catalog/README.md for the method.",
+  "recipes": [
+    {
+      "id": "sinigang-na-baboy",
+      "version": 1,
+      "name": "Sinigang na baboy (pork sinigang)",
+      "description": "Pork in tamarind broth with radish, string beans, eggplant and greens.",
+      "aliases": ["sinigang", "pork sinigang", "sinigang na baboy", "sinigang baboy"],
+      "ingredients": [
+        { "fdc": 167812, "g": 300, "note": "pork belly" },
+        { "fdc": 167843, "g": 200, "note": "pork shoulder" },
+        { "fdc": 173647, "g": 1800, "note": "water" },
+        { "fdc": 167763, "g": 40, "note": "tamarind pulp left in the broth after straining" },
+        { "fdc": 170457, "g": 150, "note": "tomato" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 168451, "g": 150, "note": "labanos (daikon radish)" },
+        { "fdc": 168462, "g": 150, "note": "kangkong; USDA has no water spinach, raw spinach used as the closest leafy green" },
+        { "fdc": 169222, "g": 100, "note": "sitaw (yardlong beans)" },
+        { "fdc": 169228, "g": 100, "note": "talong (eggplant)" },
+        { "fdc": 170497, "g": 20, "note": "siling haba (green chili)" },
+        { "fdc": 174531, "g": 30, "note": "patis (fish sauce)" }
+      ],
+      "yield_g": 2700,
+      "assumptions": "About 15% of the water evaporates over 90 minutes of simmering. A serving includes broth.",
+      "servings": 6,
+      "cup_g": 237
+    },
+    {
+      "id": "sinigang-na-hipon",
+      "version": 1,
+      "name": "Sinigang na hipon (shrimp sinigang)",
+      "description": "Shrimp in tamarind broth with radish, okra, string beans and greens.",
+      "aliases": ["shrimp sinigang", "sinigang na hipon", "sinigang hipon"],
+      "ingredients": [
+        { "fdc": 175179, "g": 400, "note": "shrimp, edible portion of about 500 g head-on" },
+        { "fdc": 173647, "g": 1500, "note": "water" },
+        { "fdc": 167763, "g": 40, "note": "tamarind pulp left in the broth" },
+        { "fdc": 170457, "g": 150, "note": "tomato" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 168451, "g": 150, "note": "labanos" },
+        { "fdc": 169260, "g": 100, "note": "okra" },
+        { "fdc": 168462, "g": 150, "note": "kangkong (spinach as closest USDA match)" },
+        { "fdc": 169222, "g": 100, "note": "sitaw" },
+        { "fdc": 170497, "g": 20, "note": "green chili" },
+        { "fdc": 174531, "g": 30, "note": "patis" }
+      ],
+      "yield_g": 2500,
+      "assumptions": "Shorter cook than pork sinigang, about 10% of the water evaporates.",
+      "servings": 6,
+      "cup_g": 237
+    },
+    {
+      "id": "pork-adobo",
+      "version": 1,
+      "name": "Pork adobo",
+      "description": "Pork shoulder and belly braised in soy sauce, vinegar and garlic.",
+      "aliases": ["adobo", "adobong baboy", "pork adobo", "adobo baboy"],
+      "ingredients": [
+        { "fdc": 167812, "g": 300, "note": "pork belly (liempo)" },
+        { "fdc": 167843, "g": 700, "note": "pork shoulder (kasim)" },
+        { "fdc": 174277, "g": 120, "note": "soy sauce" },
+        { "fdc": 172237, "g": 120, "note": "cane or white vinegar" },
+        { "fdc": 169230, "g": 40, "note": "garlic" },
+        { "fdc": 173647, "g": 240, "note": "water" },
+        { "fdc": 169655, "g": 10, "note": "sugar" },
+        { "fdc": 171411, "g": 15, "note": "cooking oil for browning" }
+      ],
+      "yield_g": 1100,
+      "assumptions": "Meat loses about a quarter of its weight as water and the sauce reduces by half. Rendered fat stays in the sauce.",
+      "servings": 6
+    },
+    {
+      "id": "chicken-adobo",
+      "version": 1,
+      "name": "Chicken adobo",
+      "description": "Chicken thighs braised in soy sauce, vinegar and garlic.",
+      "aliases": ["adobo", "adobong manok", "chicken adobo", "adobo manok"],
+      "ingredients": [
+        { "fdc": 172385, "g": 1000, "note": "chicken thigh with skin, edible portion" },
+        { "fdc": 174277, "g": 120, "note": "soy sauce" },
+        { "fdc": 172237, "g": 120, "note": "vinegar" },
+        { "fdc": 169230, "g": 40, "note": "garlic" },
+        { "fdc": 173647, "g": 240, "note": "water" },
+        { "fdc": 169655, "g": 10, "note": "sugar" },
+        { "fdc": 171411, "g": 15, "note": "cooking oil" }
+      ],
+      "yield_g": 1150,
+      "assumptions": "Chicken loses about 20% of its weight as water; sauce reduces by half.",
+      "servings": 6
+    },
+    {
+      "id": "pork-menudo",
+      "version": 1,
+      "name": "Pork menudo",
+      "description": "Pork and liver stewed in tomato sauce with potato, carrot, bell pepper, peas and raisins.",
+      "aliases": ["menudo", "menudong baboy", "pork menudo"],
+      "ingredients": [
+        { "fdc": 167843, "g": 600, "note": "pork shoulder, diced" },
+        { "fdc": 167862, "g": 150, "note": "pork liver" },
+        { "fdc": 170054, "g": 230, "note": "tomato sauce" },
+        { "fdc": 170026, "g": 250, "note": "potato" },
+        { "fdc": 170393, "g": 150, "note": "carrot" },
+        { "fdc": 170108, "g": 100, "note": "red bell pepper" },
+        { "fdc": 170419, "g": 80, "note": "green peas" },
+        { "fdc": 168165, "g": 40, "note": "raisins" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 169230, "g": 20, "note": "garlic" },
+        { "fdc": 174277, "g": 30, "note": "soy sauce" },
+        { "fdc": 171411, "g": 30, "note": "cooking oil" },
+        { "fdc": 173647, "g": 240, "note": "water" }
+      ],
+      "yield_g": 1700,
+      "assumptions": "About 15% weight loss from simmering.",
+      "servings": 6
+    },
+    {
+      "id": "kare-kare",
+      "version": 1,
+      "name": "Kare-kare",
+      "description": "Beef and tripe in peanut sauce with eggplant, string beans and pechay. Bagoong not included.",
+      "aliases": ["kare kare", "karekare", "oxtail kare-kare"],
+      "ingredients": [
+        { "fdc": 170826, "g": 800, "note": "oxtail is not in USDA SR Legacy; boneless beef short rib (lean and fat) used for a similar fat level" },
+        { "fdc": 170599, "g": 300, "note": "beef tripe" },
+        { "fdc": 174266, "g": 120, "note": "peanut butter" },
+        { "fdc": 169714, "g": 30, "note": "toasted rice flour to thicken" },
+        { "fdc": 169228, "g": 200, "note": "eggplant" },
+        { "fdc": 169222, "g": 150, "note": "sitaw" },
+        { "fdc": 170390, "g": 200, "note": "pechay (pak-choi)" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 169230, "g": 20, "note": "garlic" },
+        { "fdc": 171411, "g": 30, "note": "oil with annatto" },
+        { "fdc": 173647, "g": 2000, "note": "water for a long simmer" }
+      ],
+      "yield_g": 2400,
+      "assumptions": "Most of the water cooks off over 2 to 3 hours. Bagoong is served on the side and must be logged separately.",
+      "servings": 6
+    },
+    {
+      "id": "tinola",
+      "version": 1,
+      "name": "Chicken tinola",
+      "description": "Chicken in ginger broth with sayote and malunggay.",
+      "aliases": ["tinola", "tinolang manok", "chicken tinola"],
+      "ingredients": [
+        { "fdc": 171447, "g": 1000, "note": "chicken with skin, edible portion" },
+        { "fdc": 170402, "g": 400, "note": "sayote (chayote); green papaya is the other common choice" },
+        { "fdc": 168416, "g": 50, "note": "malunggay leaves" },
+        { "fdc": 169231, "g": 30, "note": "ginger" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 169230, "g": 15, "note": "garlic" },
+        { "fdc": 174531, "g": 30, "note": "patis" },
+        { "fdc": 171411, "g": 15, "note": "cooking oil" },
+        { "fdc": 173647, "g": 1500, "note": "water" }
+      ],
+      "yield_g": 2800,
+      "assumptions": "About 10% evaporation. A serving includes broth.",
+      "servings": 6,
+      "cup_g": 237
+    },
+    {
+      "id": "bulalo",
+      "version": 1,
+      "name": "Bulalo",
+      "description": "Beef shank and marrow soup with corn, pechay and cabbage.",
+      "aliases": ["bulalo", "beef bulalo", "nilagang bulalo"],
+      "ingredients": [
+        { "fdc": 169441, "g": 1200, "note": "beef shank meat, bone weight excluded" },
+        { "fdc": 168605, "g": 100, "note": "beef fat as a stand-in for bone marrow" },
+        { "fdc": 169998, "g": 300, "note": "corn kernels from 2 to 3 cobs" },
+        { "fdc": 170390, "g": 200, "note": "pechay" },
+        { "fdc": 169975, "g": 200, "note": "cabbage" },
+        { "fdc": 170000, "g": 100, "note": "onion" },
+        { "fdc": 174531, "g": 40, "note": "patis" },
+        { "fdc": 173647, "g": 3000, "note": "water for a 3 hour simmer" }
+      ],
+      "yield_g": 4200,
+      "assumptions": "About 30% of the water evaporates. Marrow fat varies a lot between bones.",
+      "servings": 8,
+      "cup_g": 237
+    },
+    {
+      "id": "pancit-canton",
+      "version": 1,
+      "name": "Pancit canton",
+      "description": "Stir-fried wheat egg noodles with pork, shrimp and vegetables.",
+      "aliases": ["pancit canton", "canton", "pansit canton"],
+      "ingredients": [
+        { "fdc": 169731, "g": 250, "note": "dry egg noodles" },
+        { "fdc": 167843, "g": 150, "note": "pork shoulder, sliced" },
+        { "fdc": 175179, "g": 150, "note": "shrimp" },
+        { "fdc": 169975, "g": 200, "note": "cabbage" },
+        { "fdc": 170393, "g": 100, "note": "carrot" },
+        { "fdc": 169961, "g": 100, "note": "snap beans" },
+        { "fdc": 170000, "g": 80, "note": "onion" },
+        { "fdc": 169230, "g": 15, "note": "garlic" },
+        { "fdc": 174277, "g": 45, "note": "soy sauce" },
+        { "fdc": 171411, "g": 30, "note": "cooking oil" },
+        { "fdc": 173647, "g": 500, "note": "water or broth absorbed by the noodles" }
+      ],
+      "yield_g": 1450,
+      "assumptions": "Noodles absorb most of the liquid; about 10% is lost as steam.",
+      "servings": 6
+    },
+    {
+      "id": "pancit-bihon",
+      "version": 1,
+      "name": "Pancit bihon",
+      "description": "Stir-fried rice noodles with pork, shrimp and vegetables.",
+      "aliases": ["pancit bihon", "bihon", "pansit bihon"],
+      "ingredients": [
+        { "fdc": 169742, "g": 250, "note": "dry rice noodles" },
+        { "fdc": 167843, "g": 150, "note": "pork shoulder" },
+        { "fdc": 175179, "g": 150, "note": "shrimp" },
+        { "fdc": 169975, "g": 200, "note": "cabbage" },
+        { "fdc": 170393, "g": 100, "note": "carrot" },
+        { "fdc": 169961, "g": 100, "note": "snap beans" },
+        { "fdc": 170000, "g": 80, "note": "onion" },
+        { "fdc": 169230, "g": 15, "note": "garlic" },
+        { "fdc": 174277, "g": 45, "note": "soy sauce" },
+        { "fdc": 171411, "g": 30, "note": "cooking oil" },
+        { "fdc": 173647, "g": 600, "note": "water or broth" }
+      ],
+      "yield_g": 1500,
+      "assumptions": "Noodles absorb most of the liquid; about 12% is lost as steam.",
+      "servings": 6
+    },
+    {
+      "id": "lumpiang-shanghai",
+      "version": 1,
+      "name": "Lumpiang shanghai",
+      "description": "Thin fried spring rolls filled with ground pork and vegetables.",
+      "aliases": ["lumpia", "lumpiang shanghai", "shanghai", "spring roll"],
+      "ingredients": [
+        { "fdc": 167902, "g": 500, "note": "ground pork" },
+        { "fdc": 170393, "g": 80, "note": "carrot" },
+        { "fdc": 170000, "g": 80, "note": "onion" },
+        { "fdc": 169230, "g": 15, "note": "garlic" },
+        { "fdc": 171287, "g": 50, "note": "egg" },
+        { "fdc": 174277, "g": 15, "note": "soy sauce" },
+        { "fdc": 172802, "g": 175, "note": "25 lumpia wrappers; USDA egg roll wrapper values" },
+        { "fdc": 171411, "g": 90, "note": "oil absorbed while deep frying" }
+      ],
+      "yield_g": 822,
+      "assumptions": "Filling and wrapper lose about 20% of their weight while frying and absorb oil equal to about 10% of raw weight. 25 rolls cut in half.",
+      "servings": 10,
+      "pieces": 50
+    },
+    {
+      "id": "lechon-kawali",
+      "version": 1,
+      "name": "Lechon kawali",
+      "description": "Pork belly boiled, then deep fried until crisp.",
+      "aliases": ["lechon kawali", "crispy pork belly", "kawali"],
+      "ingredients": [
+        { "fdc": 167812, "g": 1000, "note": "pork belly" },
+        { "fdc": 173468, "g": 10, "note": "salt in the boiling water and rub" },
+        { "fdc": 171411, "g": 30, "note": "oil absorbed while frying" }
+      ],
+      "fat_removed_g": 185,
+      "yield_g": 650,
+      "assumptions": "About 35% of the belly's fat renders out into the boiling water and frying oil. Weight falls to 65% of raw.",
+      "servings": 6
+    },
+    {
+      "id": "sisig",
+      "version": 1,
+      "name": "Pork sisig",
+      "description": "Chopped grilled pork face, belly and liver with onion, chili and egg.",
+      "aliases": ["sisig", "pork sisig", "sizzling sisig"],
+      "ingredients": [
+        { "fdc": 167812, "g": 300, "note": "pork belly" },
+        { "fdc": 167857, "g": 300, "note": "pork ears (stand-in for maskara)" },
+        { "fdc": 167862, "g": 100, "note": "pork liver" },
+        { "fdc": 170000, "g": 150, "note": "onion" },
+        { "fdc": 170497, "g": 20, "note": "chili" },
+        { "fdc": 174277, "g": 30, "note": "soy sauce" },
+        { "fdc": 171009, "g": 40, "note": "mayonnaise" },
+        { "fdc": 171287, "g": 50, "note": "egg on top" },
+        { "fdc": 171411, "g": 20, "note": "cooking oil" }
+      ],
+      "fat_removed_g": 40,
+      "yield_g": 750,
+      "assumptions": "Boiling and grilling remove water and some fat before chopping.",
+      "servings": 5
+    },
+    {
+      "id": "tapsilog",
+      "version": 1,
+      "name": "Tapsilog",
+      "description": "Beef tapa, garlic fried rice and a fried egg. One plate.",
+      "aliases": ["tapsilog", "tapa silog", "beef tapa with rice and egg"],
+      "ingredients": [
+        { "fdc": 169519, "g": 100, "note": "beef round for tapa" },
+        { "fdc": 174277, "g": 10, "note": "soy sauce marinade" },
+        { "fdc": 169655, "g": 5, "note": "sugar" },
+        { "fdc": 169230, "g": 10, "note": "garlic for tapa and rice" },
+        { "fdc": 169757, "g": 200, "note": "cooked white rice" },
+        { "fdc": 171287, "g": 50, "note": "egg" },
+        { "fdc": 171411, "g": 17, "note": "oil for tapa, rice and egg" }
+      ],
+      "yield_g": 362,
+      "assumptions": "Tapa loses about 25% of its weight frying; egg loses about 10%.",
+      "servings": 1,
+      "serving_name": "1 plate"
+    },
+    {
+      "id": "longsilog",
+      "version": 1,
+      "name": "Longsilog",
+      "description": "Sweet pork longganisa, garlic fried rice and a fried egg. One plate.",
+      "aliases": ["longsilog", "longganisa with rice and egg"],
+      "ingredients": [
+        { "fdc": 167902, "g": 100, "note": "ground pork for 2 longganisa" },
+        { "fdc": 169655, "g": 12, "note": "sugar" },
+        { "fdc": 169230, "g": 10, "note": "garlic" },
+        { "fdc": 174277, "g": 5, "note": "soy sauce" },
+        { "fdc": 172237, "g": 5, "note": "vinegar" },
+        { "fdc": 169757, "g": 200, "note": "cooked white rice" },
+        { "fdc": 171287, "g": 50, "note": "egg" },
+        { "fdc": 171411, "g": 15, "note": "oil" }
+      ],
+      "fat_removed_g": 5,
+      "yield_g": 365,
+      "assumptions": "Sausages lose about 25% of their weight and some fat while frying.",
+      "servings": 1,
+      "serving_name": "1 plate"
+    },
+    {
+      "id": "tocilog",
+      "version": 1,
+      "name": "Tocilog",
+      "description": "Sweet cured pork tocino, garlic fried rice and a fried egg. One plate.",
+      "aliases": ["tocilog", "tosilog", "tocino with rice and egg"],
+      "ingredients": [
+        { "fdc": 167843, "g": 100, "note": "pork shoulder for tocino" },
+        { "fdc": 169655, "g": 15, "note": "sugar cure" },
+        { "fdc": 174277, "g": 5, "note": "soy sauce" },
+        { "fdc": 169230, "g": 5, "note": "garlic for rice" },
+        { "fdc": 169757, "g": 200, "note": "cooked white rice" },
+        { "fdc": 171287, "g": 50, "note": "egg" },
+        { "fdc": 171411, "g": 15, "note": "oil" }
+      ],
+      "yield_g": 360,
+      "assumptions": "Tocino loses about 25% of its weight while frying.",
+      "servings": 1,
+      "serving_name": "1 plate"
+    },
+    {
+      "id": "sinangag",
+      "version": 1,
+      "name": "Sinangag (garlic fried rice)",
+      "description": "Day-old rice fried with garlic.",
+      "aliases": ["sinangag", "garlic rice", "garlic fried rice"],
+      "ingredients": [
+        { "fdc": 169757, "g": 1000, "note": "cooked white rice" },
+        { "fdc": 169230, "g": 30, "note": "garlic" },
+        { "fdc": 171411, "g": 40, "note": "oil" },
+        { "fdc": 173468, "g": 5, "note": "salt" }
+      ],
+      "yield_g": 1040,
+      "assumptions": "Small moisture loss while frying.",
+      "servings": 5
+    },
+    {
+      "id": "arroz-caldo",
+      "version": 1,
+      "name": "Arroz caldo",
+      "description": "Chicken and glutinous rice porridge with ginger.",
+      "aliases": ["arroz caldo", "lugaw na may manok", "chicken porridge"],
+      "ingredients": [
+        { "fdc": 171447, "g": 500, "note": "chicken with skin, edible portion" },
+        { "fdc": 168883, "g": 200, "note": "uncooked glutinous rice" },
+        { "fdc": 169231, "g": 30, "note": "ginger" },
+        { "fdc": 169230, "g": 20, "note": "garlic" },
+        { "fdc": 170000, "g": 80, "note": "onion" },
+        { "fdc": 174531, "g": 30, "note": "patis" },
+        { "fdc": 171411, "g": 20, "note": "oil" },
+        { "fdc": 173647, "g": 2000, "note": "water" }
+      ],
+      "yield_g": 2500,
+      "assumptions": "About 20% of the water evaporates; the rice absorbs the rest.",
+      "servings": 6,
+      "cup_g": 237
+    },
+    {
+      "id": "ginisang-monggo",
+      "version": 1,
+      "name": "Ginisang monggo",
+      "description": "Mung bean stew with pork, tomato and malunggay.",
+      "aliases": ["monggo", "ginisang monggo", "mung bean soup", "munggo"],
+      "ingredients": [
+        { "fdc": 174256, "g": 250, "note": "dry mung beans" },
+        { "fdc": 167812, "g": 150, "note": "pork belly" },
+        { "fdc": 170457, "g": 100, "note": "tomato" },
+        { "fdc": 170000, "g": 80, "note": "onion" },
+        { "fdc": 169230, "g": 15, "note": "garlic" },
+        { "fdc": 168416, "g": 50, "note": "malunggay leaves" },
+        { "fdc": 174531, "g": 30, "note": "patis" },
+        { "fdc": 171411, "g": 15, "note": "oil" },
+        { "fdc": 173647, "g": 1500, "note": "water" }
+      ],
+      "yield_g": 1800,
+      "assumptions": "About 25% of the water evaporates over an hour; the beans absorb most of the rest.",
+      "servings": 6
+    },
+    {
+      "id": "champorado",
+      "version": 1,
+      "name": "Champorado",
+      "description": "Chocolate glutinous rice porridge with evaporated milk.",
+      "aliases": ["champorado", "chocolate porridge", "tsamporado"],
+      "ingredients": [
+        { "fdc": 168883, "g": 200, "note": "uncooked glutinous rice" },
+        { "fdc": 169593, "g": 40, "note": "unsweetened cocoa (stand-in for tablea)" },
+        { "fdc": 169655, "g": 120, "note": "sugar" },
+        { "fdc": 173647, "g": 1300, "note": "water" },
+        { "fdc": 171276, "g": 90, "note": "evaporated milk poured on top" }
+      ],
+      "yield_g": 1400,
+      "assumptions": "About 25% of the water evaporates while stirring.",
+      "servings": 6
+    },
+    {
+      "id": "turon",
+      "version": 1,
+      "name": "Turon",
+      "description": "Saba banana and jackfruit in a fried caramelized wrapper.",
+      "aliases": ["turon", "banana lumpia", "turon na saging"],
+      "ingredients": [
+        { "fdc": 169130, "g": 600, "note": "saba banana; USDA ripe plantain used as the closest cooking banana" },
+        { "fdc": 174687, "g": 100, "note": "ripe jackfruit" },
+        { "fdc": 168833, "g": 120, "note": "brown sugar" },
+        { "fdc": 172802, "g": 80, "note": "10 wrappers" },
+        { "fdc": 171411, "g": 60, "note": "oil absorbed while frying" }
+      ],
+      "yield_g": 870,
+      "assumptions": "About 10% moisture loss while frying.",
+      "servings": 10,
+      "pieces": 10
+    },
+    {
+      "id": "bibingka",
+      "version": 1,
+      "name": "Bibingka",
+      "description": "Baked rice cake with coconut milk, salted egg and cheese.",
+      "aliases": ["bibingka", "rice cake", "bibingkang galapong"],
+      "ingredients": [
+        { "fdc": 169714, "g": 250, "note": "rice flour" },
+        { "fdc": 170173, "g": 300, "note": "coconut milk" },
+        { "fdc": 169655, "g": 150, "note": "sugar" },
+        { "fdc": 171287, "g": 150, "note": "3 eggs" },
+        { "fdc": 173410, "g": 30, "note": "butter" },
+        { "fdc": 172803, "g": 10, "note": "baking powder" },
+        { "fdc": 172189, "g": 60, "note": "salted duck egg topping; added salt not counted, so sodium is low" },
+        { "fdc": 170853, "g": 40, "note": "processed cheese topping" }
+      ],
+      "yield_g": 870,
+      "assumptions": "About 12% moisture loss in baking. 8 pieces.",
+      "servings": 8,
+      "pieces": 8
+    },
+    {
+      "id": "puto",
+      "version": 1,
+      "name": "Puto",
+      "description": "Steamed rice cake.",
+      "aliases": ["puto", "steamed rice cake", "puto puti"],
+      "ingredients": [
+        { "fdc": 169714, "g": 250, "note": "rice flour" },
+        { "fdc": 169655, "g": 150, "note": "sugar" },
+        { "fdc": 172803, "g": 15, "note": "baking powder" },
+        { "fdc": 171276, "g": 120, "note": "evaporated milk" },
+        { "fdc": 173647, "g": 200, "note": "water" }
+      ],
+      "yield_g": 720,
+      "assumptions": "Steaming changes the weight very little. 24 small molds.",
+      "servings": 8,
+      "pieces": 24
+    },
+    {
+      "id": "pandesal",
+      "version": 1,
+      "name": "Pandesal",
+      "description": "Soft bread roll coated in breadcrumbs.",
+      "aliases": ["pandesal", "pan de sal", "pandisal", "bread roll"],
+      "ingredients": [
+        { "fdc": 168894, "g": 500, "note": "all-purpose flour" },
+        { "fdc": 169655, "g": 60, "note": "sugar" },
+        { "fdc": 175043, "g": 7, "note": "instant yeast" },
+        { "fdc": 173468, "g": 8, "note": "salt" },
+        { "fdc": 171265, "g": 250, "note": "whole milk" },
+        { "fdc": 171287, "g": 50, "note": "egg" },
+        { "fdc": 173410, "g": 50, "note": "butter" },
+        { "fdc": 174928, "g": 30, "note": "breadcrumbs for coating" }
+      ],
+      "yield_g": 840,
+      "assumptions": "About 12% moisture loss in baking. 24 rolls.",
+      "servings": 12,
+      "pieces": 24
+    }
+  ]
+}
