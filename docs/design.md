@@ -48,7 +48,9 @@ Icons are Lucide at 1.6 stroke, 2.1 when active. They are used only in the nav, 
 | Discover | What is this food worth? | search by English or Tagalog name, type filters, recent foods, Filipino dishes |
 | Food sheet | How much am I adding? | live kcal and macros for the chosen serving and quantity, serving choice or grams, meal, one primary button |
 | Progress | Am I close to my targets over time? | 7-day bars against a dashed target line, 30-day grid of days within target, today's macro split |
-| Profile | What are my targets and details? | sign-in, daily targets, optional body details, where the numbers come from |
+| Sign in | How do I get in? | one form with a Sign in / Create account switch, password show toggle, errors in plain words |
+| Onboarding | What should each day aim for? | optional name, calorie target, optional macro targets with a "Fill from calories" helper |
+| Profile | What are my targets and details? | account, daily targets (edit in a sheet), optional body details, where the numbers come from, sign out |
 
 Rules that came out of building them:
 
@@ -64,7 +66,7 @@ Rules that came out of building them:
 
 ## Sample data during design
 
-Until a screen reads from Supabase it uses `src/fixtures/sample-data.ts`. Food values there are copied from the real catalog and run through the same calculator as the server, so every number is true for that food. The diary, targets and history are made up, and every screen that shows them carries a "Sample data" note. Buttons that would save something say "not connected yet" when tapped. Wiring a screen means deleting its fixture import and its note.
+Sign-in, onboarding and Profile read and write Supabase. Until the other screens do, they use `src/fixtures/sample-data.ts`. Food values there are copied from the real catalog and run through the same calculator as the server, so every number is true for that food. The diary, targets and history are made up, and every screen that shows them carries a "Sample data" note. Buttons that would save something say "not connected yet" when tapped. Wiring a screen means deleting its fixture import and its note.
 
 ## Motion
 

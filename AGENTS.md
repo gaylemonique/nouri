@@ -68,6 +68,9 @@ screen / component
 - Writes are optimistic: generate the entry UUID on the device, update the query cache, call the RPC with that id, roll back on error. The RPC is idempotent on the id, so retries and offline replays are safe.
 - Use the user's local calendar date for `log_date`. Never derive it from a UTC timestamp on the server.
 - Production screens show database data or a clearly marked pending local entry. No mock numbers outside prototypes and tests.
+- Screen gating (`AuthGate`) is a convenience, not security. Every protection lives in RLS and grants.
+- Sign-out goes through `useSignOut`, which also clears the query cache.
+- Auth settings change in `supabase/config.toml`, then `npx supabase config diff` and `config push`. Never change them only in the dashboard.
 
 ## Keep it small
 

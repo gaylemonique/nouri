@@ -10,7 +10,8 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 04 (backend) | Filipino catalog: 24 dishes as recipe estimates, search, recents, favorites | Done, live on Supabase |
 | 00 | Next.js static export, Capacitor with Android, Tailwind, env validation, Supabase client | Done |
 | 01 | All five screens and the food sheet designed and interactive, on labelled sample data (see `docs/design.md`) | Done |
-| 03, 05 to 08 | Auth flows, diary UI, analytics, offline sync, store builds | Not started |
+| 03 | Email and password sign-in, onboarding (name and daily targets), Profile reads and edits real targets | Done, see [Sign-in](#sign-in) for what waits on an email sender |
+| 05 to 08 | Diary UI on real data, analytics, offline sync, store builds | Not started |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
 
@@ -60,6 +61,21 @@ There is no Next.js server. The app is a static bundle, so anything that must be
 - **Catalog values are per 100 g.** Servings are stored as gram weights. Nutrient consumed = per 100 g value × grams eaten / 100.
 - **Sources are recorded per food.** `source_name`, `source_ref` and `verification_status` say where each number came from. Values that have not been checked against a source are never marked `verified`.
 
+## Sign-in
+
+Email and password through Supabase Auth. There is no server, so the app decides on the device which screen to show (`src/features/auth/auth-gate.tsx`): no session goes to `/sign-in/`, a profile without `onboarding_completed_at` goes to `/onboarding/`. That only picks a screen; RLS is what keeps one person's data from another.
+
+- The session is stored with Capacitor Preferences (SharedPreferences on Android, UserDefaults on iOS), not WebView localStorage, which iOS can clear when storage runs low.
+- Signing out ends the session on this device only and clears every cached query.
+- Onboarding saves the goals first, then marks the profile done, so a failure halfway leaves the user on onboarding with nothing lost.
+
+**Waiting on an email sender.** Supabase's built-in email only delivers to members of the Supabase team and, on the free plan, its templates cannot be changed. Until a custom SMTP sender (for example Resend) is configured:
+
+- Email confirmation is off (`enable_confirmations = false` in `supabase/config.toml`), so anyone can sign up with an address they don't own.
+- There is no password reset.
+
+With SMTP in place: turn confirmation back on, add password reset, and consider switching to a 6-digit email code so the native app needs no deep links. Auth settings live in `supabase/config.toml`; preview with `npx supabase config diff` and apply with `npx supabase config push`.
+
 ## Database
 
 | Table | Owner | Purpose |
@@ -90,12 +106,13 @@ The catalog is readable by signed-in users and writable only through migrations 
 
 ```text
 src/
-  app/               routes: (main)/ holds Home (/), diary, discover, progress, profile
+  app/               routes: (main)/ holds Home (/), diary, discover, progress, profile; (auth)/ holds sign-in and onboarding
   components/        ui/ primitives, navigation/, shared/ screen parts
-  features/          dashboard, food-diary, food-search, nutrition-history, profile
+  features/          auth, dashboard, food-diary, food-search, nutrition-history, profile
+  services/repositories/  the only code that calls Supabase
   fixtures/          labelled sample data used until screens read from Supabase
   hooks/ utils/      device date, number and date formatting
-  domain/nutrition/  client copy of the server's nutrition formula
+  domain/            nutrition formula (client copy of the server's), macro split for goals
   infrastructure/    Supabase client and env validation
   types/             generated database types
 tests/unit/          Vitest tests
@@ -112,7 +129,6 @@ supabase/
 AGENTS.md            rules for anyone (human or agent) writing code here
 ```
 
-`src/services/repositories/` arrives with the first screen that reads data.
 
 ## Working on the backend
 
@@ -128,6 +144,7 @@ npx supabase db push --remote
 # run the database checks (each is one transaction, rolled back)
 npx supabase db query --remote --yes -f supabase/tests/diary_checks.sql
 npx supabase db query --remote --yes -f supabase/tests/catalog_checks.sql
+npx supabase db query --remote --yes -f supabase/tests/profile_checks.sql
 
 # test the recipe calculator
 node --test "catalog/*.test.mjs"
