@@ -299,7 +299,7 @@ export type Database = {
           id?: string
           protein_goal_g?: number | null
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           calorie_goal?: number
