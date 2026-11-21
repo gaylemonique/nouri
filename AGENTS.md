@@ -60,6 +60,8 @@ screen / component
 - grams eaten = serving grams × quantity; nutrient = per 100 g value × grams eaten / 100.
 - The SQL functions are the source of truth. The TypeScript calculator used for optimistic updates must produce the same numbers, and a test must prove it.
 - Never mark a food `verified` unless its numbers trace to a named source record in `source_ref`. Use `estimated` or `unverified` otherwise.
+- Filipino dishes come from `catalog/recipes.json` through `catalog/build-recipe-foods.mjs`. Change the recipe and regenerate into a new migration; never hand-edit generated SQL. Method and substitutions: `catalog/README.md`.
+- No DOST-FNRI (PhilFCT) values until FNRI has granted permission in writing.
 
 ## Client data rules
 

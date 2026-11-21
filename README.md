@@ -6,9 +6,10 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 
 | Phase | Scope | State |
 | --- | --- | --- |
-| 02 | Supabase schema, RLS, food logging functions, reference seed | In progress |
+| 02 | Supabase schema, RLS, food logging functions, reference seed | Done, live on Supabase |
+| 04 (backend) | Filipino catalog: 24 dishes as recipe estimates, search, recents, favorites | Done, live on Supabase |
 | 00, 01 | Next.js + Capacitor shell, design system, screens | Not started |
-| 03 to 08 | Auth flows, Filipino catalog, diary UI, analytics, offline sync, store builds | Not started |
+| 03, 05 to 08 | Auth flows, diary UI, analytics, offline sync, store builds | Not started |
 
 The backend is being built first so the app screens can be wired to real data from day one instead of mock numbers.
 
@@ -65,10 +66,14 @@ The catalog is readable by signed-in users and writable only through migrations 
 ## Repository layout
 
 ```text
+catalog/
+  recipes.json       Filipino dish recipes behind the estimated values
+  usda-ingredients.json  USDA values for every recipe ingredient
+  *.mjs              extractor, calculator (writes migrations) and its tests
 supabase/
   config.toml
-  migrations/        schema, RLS, functions, reference foods
-  tests/             SQL checks for RLS and the nutrition maths
+  migrations/        schema, RLS, functions, catalog data
+  tests/             SQL checks for RLS, the nutrition maths and the catalog
 src/types/
   database.types.ts  generated from the linked project
 AGENTS.md            rules for anyone (human or agent) writing code here
@@ -87,8 +92,12 @@ npx supabase link <project-ref>
 # apply migrations to the linked project
 npx supabase db push --remote
 
-# run the RLS and nutrition checks (one transaction, rolled back)
+# run the database checks (each is one transaction, rolled back)
 npx supabase db query --remote --yes -f supabase/tests/diary_checks.sql
+npx supabase db query --remote --yes -f supabase/tests/catalog_checks.sql
+
+# test the recipe calculator
+node --test "catalog/*.test.mjs"
 
 # regenerate types after a schema change
 npx supabase gen types typescript --linked --schema public > src/types/database.types.ts
@@ -98,12 +107,13 @@ Write each schema change as a new file in `supabase/migrations/`. Do not edit a 
 
 ## Food data sources
 
-The first reference foods come from USDA FoodData Central (SR Legacy), which is public domain. Each row keeps its FDC id in `source_ref`.
+- **Plain foods** (rice, egg, fish, fruit): USDA FoodData Central, SR Legacy, public domain. Marked `verified`, with the FDC id in `source_ref`.
+- **Filipino dishes** (sinigang, adobo, kare-kare, pancit, lumpia, silog plates, pandesal and more): calculated from written recipes using USDA ingredient values. Marked `estimated`, with `source_ref = recipe:<id>`. The method, the substitutions for ingredients USDA lacks (kangkong, oxtail, saba) and the regeneration steps are in [`catalog/README.md`](catalog/README.md).
 
-Planned for the Filipino catalog, pending a licence check before any data is imported:
+Not used yet:
 
-- DOST-FNRI Philippine Food Composition Tables
-- Open Food Facts (ODbL, requires attribution and share-alike for the database)
+- DOST-FNRI Philippine Food Composition Tables: the better source for Filipino dishes, but permission to use them in an app has not been confirmed.
+- Open Food Facts: ODbL requires attribution and share-alike for the database.
 
 ## Health note
 
