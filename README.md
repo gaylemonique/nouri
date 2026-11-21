@@ -8,10 +8,33 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | --- | --- | --- |
 | 02 | Supabase schema, RLS, food logging functions, reference seed | Done, live on Supabase |
 | 04 (backend) | Filipino catalog: 24 dishes as recipe estimates, search, recents, favorites | Done, live on Supabase |
-| 00, 01 | Next.js + Capacitor shell, design system, screens | Not started |
+| 00 | Next.js static export, Capacitor with Android, Tailwind, env validation, Supabase client | Done |
+| 01 | Design tokens and bottom navigation done; five screens are placeholders that say "Not built yet" | In progress |
 | 03, 05 to 08 | Auth flows, diary UI, analytics, offline sync, store builds | Not started |
 
-The backend is being built first so the app screens can be wired to real data from day one instead of mock numbers.
+The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
+
+## Getting started
+
+Needs Node 22 or newer.
+
+```bash
+npm install
+cp .env.example .env.local     # fill in the Supabase URL and publishable key
+npm run dev                    # http://localhost:3000
+```
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Next.js dev server |
+| `npm run build` | Static export into `out/` (what Capacitor ships) |
+| `npm run lint` | ESLint with the Next.js rules |
+| `npm run typecheck` | `tsc --noEmit`, strict mode |
+| `npm test` | Vitest unit tests (`tests/unit`) |
+| `npm run test:catalog` | Tests for the recipe calculator |
+| `npm run cap:sync` | Build, then copy `out/` into the native projects |
+
+To run on Android: `npm run cap:sync`, then `npx cap open android` and run from Android Studio (needs Android Studio with JDK 21). iOS needs a Mac with Xcode; the `ios/` project has not been added yet.
 
 ## How it fits together
 
@@ -66,6 +89,15 @@ The catalog is readable by signed-in users and writable only through migrations 
 ## Repository layout
 
 ```text
+src/
+  app/               routes: (main)/ holds Home (/), diary, discover, progress, profile
+  components/        navigation/ and shared/ UI
+  domain/nutrition/  client copy of the server's nutrition formula
+  infrastructure/    Supabase client and env validation
+  types/             generated database types
+tests/unit/          Vitest tests
+android/             Capacitor Android project
+docs/design.md       colours, type, spacing and the reasons for them
 catalog/
   recipes.json       Filipino dish recipes behind the estimated values
   usda-ingredients.json  USDA values for every recipe ingredient
@@ -74,12 +106,10 @@ supabase/
   config.toml
   migrations/        schema, RLS, functions, catalog data
   tests/             SQL checks for RLS, the nutrition maths and the catalog
-src/types/
-  database.types.ts  generated from the linked project
 AGENTS.md            rules for anyone (human or agent) writing code here
 ```
 
-The app folders described in `AGENTS.md` (`src/app`, `src/features`, `src/domain` and so on) arrive with phases 00 and 01.
+`src/features/` and `src/services/repositories/` arrive with the first screen that reads data.
 
 ## Working on the backend
 

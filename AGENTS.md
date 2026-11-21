@@ -101,7 +101,17 @@ npx supabase gen types typescript --linked --schema public > src/types/database.
 
 Then run the SQL checks in `supabase/tests` against the project and confirm every check passes.
 
-App changes (once the app exists): typecheck, lint, unit tests, `npm run build`, and `npx cap sync`.
+App changes:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build        # must produce out/
+npx cap sync android
+```
+
+UI changes also get checked in a browser at phone width (375 px) in light and dark mode. Visual rules and their reasons: `docs/design.md`.
 
 Never report something as working if it was not run.
 
