@@ -87,6 +87,9 @@ npx supabase link <project-ref>
 # apply migrations to the linked project
 npx supabase db push --remote
 
+# run the RLS and nutrition checks (one transaction, rolled back)
+npx supabase db query --remote --yes -f supabase/tests/diary_checks.sql
+
 # regenerate types after a schema change
 npx supabase gen types typescript --linked --schema public > src/types/database.types.ts
 ```
