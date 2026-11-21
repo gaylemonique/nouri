@@ -126,7 +126,7 @@ function FoodSheetBody({ start }: { start: FoodSheetStart }) {
       <div className="space-y-2">
         {notice ? (
           <p role="status" className="rounded-lg bg-line/50 px-3 py-2 text-center text-sm text-ink-muted">
-            Saving is not connected yet. Your diary will update here once sign-in is added.
+            Saving is not connected yet. Your diary will update here once logging is connected.
           </p>
         ) : null}
         <button

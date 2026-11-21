@@ -17,7 +17,7 @@ export function HomeView() {
   return (
     <>
       <ScreenHeader title="Today" kicker={<TodayLabel />} />
-      <SampleDataNote>Your own meals replace this day once sign-in is connected.</SampleDataNote>
+      <SampleDataNote>Your own meals replace this day once logging is connected.</SampleDataNote>
 
       <div className="space-y-7">
         <CalorieSummary eaten={total.calories} target={t.calories} />

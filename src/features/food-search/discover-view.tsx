@@ -47,7 +47,7 @@ export function DiscoverView() {
   return (
     <>
       <ScreenHeader title="Discover" kicker={isMeal(mealParam) ? `Adding to ${mealLabel}` : undefined} />
-      <SampleDataNote>Search covers {SAMPLE_FOODS.length} catalog foods here and the full catalog once sign-in is connected.</SampleDataNote>
+      <SampleDataNote>Search covers {SAMPLE_FOODS.length} catalog foods here and the full catalog once search is connected.</SampleDataNote>
 
       <label className="relative mb-3 block">
         <span className="sr-only">Search foods</span>

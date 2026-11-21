@@ -1,54 +1,88 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { SampleDataNote, ScreenHeader, SectionTitle } from "@/components/shared/screen";
-import { SAMPLE_TARGETS } from "@/fixtures/sample-data";
+import { ScreenHeader, SectionTitle } from "@/components/shared/screen";
+import { Sheet } from "@/components/ui/sheet";
+import { useSession } from "@/features/auth/use-session";
+import { useSignOut } from "@/features/auth/use-sign-out";
+import type { Profile } from "@/services/repositories/profile-repository";
 import { formatKcal } from "@/utils/format";
+import { GoalsForm } from "./goals-form";
+import { useGoals, useProfile, useSaveGoals } from "./use-profile";
+
+const ACTIVITY: Record<NonNullable<Profile["activity_level"]>, string> = {
+  sedentary: "Mostly sitting",
+  light: "Lightly active",
+  moderate: "Moderately active",
+  active: "Active",
+  very_active: "Very active",
+};
+
+const OBJECTIVE: Record<NonNullable<Profile["tracking_objective"]>, string> = {
+  lose_weight: "Lose weight",
+  maintain_weight: "Keep my weight",
+  gain_weight: "Gain weight",
+  track_only: "Just tracking",
+};
+
+const grams = (n: number | null | undefined) => (n === null || n === undefined ? null : `${n} g`);
 
 export function ProfileView() {
+  const { session } = useSession();
+  // AuthGate renders this screen only with a session.
+  const userId = session!.user.id;
+  const profile = useProfile(userId);
+  const goals = useGoals(userId);
+  const saveGoals = useSaveGoals(userId);
+  const signOut = useSignOut();
+  const [editingGoals, setEditingGoals] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const notConnected = (what: string) => () => setNotice(`${what} is not connected yet.`);
-  const t = SAMPLE_TARGETS;
+
+  const p = profile.data;
+  const g = goals.data;
 
   return (
     <>
       <ScreenHeader title="Profile" />
-      <SampleDataNote>The targets below are examples. Yours are set during sign-up.</SampleDataNote>
 
       <section className="mb-7 rounded-card border border-line bg-surface p-4">
-        <p className="font-medium">Not signed in</p>
-        <p className="mt-1 text-sm text-ink-muted">Sign in to keep your diary on every device and back it up.</p>
-        <button type="button" onClick={notConnected("Sign-in")} className="mt-3 h-11 w-full rounded-lg bg-accent font-semibold text-accent-ink">
-          Sign in or create an account
-        </button>
+        <p className="font-medium">{p?.display_name ?? "No name set"}</p>
+        <p className="mt-0.5 text-sm text-ink-muted">{session!.user.email}</p>
       </section>
-
-      {notice ? (
-        <p role="status" className="-mt-4 mb-5 text-center text-sm text-ink-muted">
-          {notice}
-        </p>
-      ) : null}
 
       <div className="space-y-7">
         <section>
-          <SectionTitle aside={<EditButton onClick={notConnected("Editing targets")} />}>Daily targets</SectionTitle>
+          <SectionTitle aside={<EditButton label="Edit daily targets" onClick={() => setEditingGoals(true)} />}>Daily targets</SectionTitle>
           <Rows>
-            <Row label="Calories" value={`${formatKcal(t.calories)} kcal`} />
-            <Row label="Protein" value={`${t.protein_g} g`} />
-            <Row label="Carbs" value={`${t.carbohydrates_g} g`} />
-            <Row label="Fat" value={`${t.fat_g} g`} />
+            <Row label="Calories" value={g ? `${formatKcal(g.calorie_goal)} kcal` : null} />
+            <Row label="Protein" value={grams(g?.protein_goal_g)} />
+            <Row label="Carbs" value={grams(g?.carbohydrates_goal_g)} />
+            <Row label="Fat" value={grams(g?.fat_goal_g)} />
           </Rows>
+          {saveGoals.isError ? (
+            <p role="alert" className="mt-2 text-sm">
+              Couldn&apos;t save your targets, so they are back to what they were. Try again.
+            </p>
+          ) : null}
         </section>
 
         <section>
-          <SectionTitle aside={<EditButton onClick={notConnected("Editing your details")} />}>About you</SectionTitle>
+          <SectionTitle aside={<EditButton label="Edit your details" onClick={() => setNotice("Editing your details is not built yet.")} />}>
+            About you
+          </SectionTitle>
           <Rows>
-            <Row label="Height" value={null} />
-            <Row label="Weight" value={null} />
-            <Row label="Activity" value={null} />
-            <Row label="Goal" value={null} />
+            <Row label="Height" value={p?.height_cm ? `${p.height_cm} cm` : null} />
+            <Row label="Weight" value={p?.current_weight_kg ? `${p.current_weight_kg} kg` : null} />
+            <Row label="Activity" value={p?.activity_level ? (ACTIVITY[p.activity_level] ?? null) : null} />
+            <Row label="Goal" value={p?.tracking_objective ? (OBJECTIVE[p.tracking_objective] ?? null) : null} />
           </Rows>
-          <p className="mt-2 text-xs text-ink-muted">All optional. Used only to suggest targets, which you can change.</p>
+          {notice ? (
+            <p role="status" className="mt-2 text-sm text-ink-muted">
+              {notice}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-ink-muted">All optional. Used only to suggest targets, which you can change.</p>
+          )}
         </section>
 
         <section>
@@ -61,14 +95,39 @@ export function ProfileView() {
             <p>Nouri shows estimates. It is not medical or dietary advice.</p>
           </div>
         </section>
+
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="h-12 w-full rounded-lg border border-line font-medium hover:border-ink-muted"
+        >
+          Sign out
+        </button>
       </div>
+
+      <Sheet open={editingGoals} onClose={() => setEditingGoals(false)} title="Daily targets">
+        {editingGoals ? (
+          <div className="pt-4">
+            <GoalsForm
+              initial={g ?? null}
+              submitLabel="Save targets"
+              onSubmit={async ({ goals: input }) => {
+                // Optimistic: the rows update now; a failure rolls them back
+                // and shows the message under the targets.
+                saveGoals.mutate(input);
+                setEditingGoals(false);
+              }}
+            />
+          </div>
+        ) : null}
+      </Sheet>
     </>
   );
 }
 
-function EditButton({ onClick }: { onClick: () => void }) {
+function EditButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="-my-3 px-2 py-3 text-sm font-medium text-accent">
+    <button type="button" onClick={onClick} aria-label={label} className="-my-3 px-2 py-3 text-sm font-medium text-accent">
       Edit
     </button>
   );
