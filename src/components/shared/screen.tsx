@@ -1,24 +1,32 @@
 import type { ReactNode } from "react";
 
-export function ScreenHeader({ title, kicker }: { title: string; kicker?: ReactNode }) {
+export function ScreenHeader({ title, kicker, action }: { title: string; kicker?: ReactNode; action?: ReactNode }) {
   return (
-    <header className="pt-6 pb-5">
-      {kicker ? <p className="text-sm text-ink-muted">{kicker}</p> : null}
-      <h1 className="font-display text-[2rem] leading-tight tracking-[-0.01em]">{title}</h1>
+    <header className="flex items-end justify-between gap-4 pt-6 pb-4">
+      <div>
+        {kicker ? <p className="text-sm text-ink-muted">{kicker}</p> : null}
+        <h1 className="font-display text-[2rem] leading-tight tracking-[-0.01em]">{title}</h1>
+      </div>
+      {action}
     </header>
   );
 }
 
-// Marks a screen section that exists in the layout but is not wired to data
-// yet. Says what will appear, never shows sample numbers.
-export function NotBuiltYet({ heading, children }: { heading: string; children: ReactNode }) {
+// Shown on every screen that renders prototype data, until the screen reads
+// from Supabase. Removing it is part of wiring the screen.
+export function SampleDataNote({ children }: { children: ReactNode }) {
   return (
-    <section className="rounded-card border border-dashed border-line px-4 py-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-medium">{heading}</h2>
-        <span className="shrink-0 text-xs text-ink-muted">Not built yet</span>
-      </div>
-      <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{children}</p>
-    </section>
+    <p className="mb-4 rounded-lg bg-line/50 px-3 py-2 text-xs leading-relaxed text-ink-muted">
+      <span className="font-semibold text-ink">Sample data.</span> {children}
+    </p>
+  );
+}
+
+export function SectionTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+  return (
+    <div className="mb-2 flex items-baseline justify-between gap-3">
+      <h2 className="text-[0.8125rem] font-semibold text-ink-muted">{children}</h2>
+      {aside ? <span className="text-xs text-ink-muted">{aside}</span> : null}
+    </div>
   );
 }
