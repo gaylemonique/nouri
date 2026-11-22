@@ -1,5 +1,6 @@
 "use client";
 
+import { onlineManager } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useProfile } from "@/features/profile/use-profile";
@@ -16,12 +17,15 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const profile = useProfile(session?.user.id);
   const needsOnboarding = profile.data ? !profile.data.onboarding_completed_at : false;
 
+  const accountGone = profile.data === null;
+
   useEffect(() => {
     if (status === "signed-out") router.replace("/sign-in/");
+    else if (accountGone) void signOut();
     else if (needsOnboarding) router.replace("/onboarding/");
-  }, [status, needsOnboarding, router]);
+  }, [status, accountGone, needsOnboarding, router, signOut]);
 
-  if (status !== "signed-in" || needsOnboarding) return <Loading />;
+  if (status !== "signed-in" || needsOnboarding || accountGone) return <Loading />;
 
   if (profile.isError && !profile.data) {
     return (
@@ -38,10 +42,11 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // ponytail: on an offline cold start the profile query pauses with nothing
-  // cached, and the user is let in rather than kept on a blank screen. The
-  // offline cache (phase 07) persists the profile and removes this case.
-  if (profile.isPending && profile.fetchStatus !== "paused") return <Loading />;
+  // ponytail: on an offline cold start the profile query has nothing cached,
+  // and the user is let in rather than kept on a blank screen. Only when the
+  // device is really offline: queries also pause while the window is hidden.
+  // The offline cache (phase 07) persists the profile and removes this case.
+  if (profile.isPending && onlineManager.isOnline()) return <Loading />;
 
   return <>{children}</>;
 }

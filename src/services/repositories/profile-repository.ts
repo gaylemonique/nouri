@@ -5,8 +5,11 @@ export type Profile = Tables<"profiles">;
 export type NutritionGoals = Tables<"nutrition_goals">;
 export type GoalsInput = Pick<NutritionGoals, "calorie_goal" | "protein_goal_g" | "carbohydrates_goal_g" | "fat_goal_g">;
 
-export async function fetchProfile(userId: string): Promise<Profile> {
-  const { data, error } = await getSupabase().from("profiles").select("*").eq("id", userId).single();
+// null means the account no longer exists (deleted elsewhere while this
+// device still held a valid token). The auth trigger creates a profile for
+// every user, so a live account always has one.
+export async function fetchProfile(userId: string): Promise<Profile | null> {
+  const { data, error } = await getSupabase().from("profiles").select("*").eq("id", userId).maybeSingle();
   if (error) throw error;
   return data;
 }

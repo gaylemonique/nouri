@@ -18,12 +18,14 @@ export function OnboardingView() {
   const [error, setError] = useState<string | null>(null);
 
   const done = Boolean(profile.data?.onboarding_completed_at);
+  const accountGone = profile.data === null;
   useEffect(() => {
     if (status === "signed-out") router.replace("/sign-in/");
+    else if (accountGone) void signOut();
     else if (done) router.replace("/");
-  }, [status, done, router]);
+  }, [status, accountGone, done, router, signOut]);
 
-  if (!userId || profile.isPending || goals.isPending || done) return <p className="sr-only">Loading</p>;
+  if (!userId || profile.isPending || goals.isPending || done || accountGone) return <p className="sr-only">Loading</p>;
 
   return (
     <>
