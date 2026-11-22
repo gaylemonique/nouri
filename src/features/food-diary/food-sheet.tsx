@@ -63,8 +63,8 @@ function FoodSheetBody({
   const food = describe(start);
   const logDate = start.mode === "add" ? start.logDate : start.entry.logDate;
   const addFood = useAddFood();
-  const updateEntry = useUpdateEntry(logDate);
-  const deleteEntry = useDeleteEntry(logDate);
+  const updateEntry = useUpdateEntry();
+  const deleteEntry = useDeleteEntry();
 
   const [servingId, setServingId] = useState<string>(food.servingId);
   const [customGrams, setCustomGrams] = useState<string>(String(food.grams));
@@ -87,14 +87,14 @@ function FoodSheetBody({
       addFood({ food: start.food, meal, logDate, quantity: amount, ...choice });
       onAdded?.(`${start.food.name} added to ${mealLabel(meal).toLowerCase()}.`);
     } else {
-      updateEntry.mutate({ id: start.entry.id, meal, quantity: amount, ...choice });
+      updateEntry(start.entry, { meal, quantity: amount, ...choice });
     }
     onClose();
   };
 
   const remove = () => {
     if (start.mode !== "edit") return;
-    deleteEntry.mutate(start.entry.id);
+    deleteEntry(start.entry);
     onClose();
   };
 

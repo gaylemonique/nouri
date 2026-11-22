@@ -13,7 +13,8 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 03 | Email and password sign-in, onboarding (name and daily targets), Profile reads and edits real targets | Done, see [Sign-in](#sign-in) for what waits on an email sender |
 | 05 | Home, Diary, Discover and the food sheet on real data: catalog search, adding, editing and removing entries with optimistic updates | Done |
 | 06 | Progress on real data: 7-day calories against target, 30-day grid of days within target, today's macro split | Done |
-| 07, 08 | Offline sync (SQLite queue), store builds | Not started |
+| 07 | Offline: persisted write queue that replays in order, device cache of reads, offline states on every screen | Done, checked in the browser with simulated offline; not yet on a phone |
+| 08 | Store builds | Not started |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
 
@@ -44,7 +45,7 @@ To run on Android: `npm run cap:sync`, then `npx cap open android` and run from 
 ```text
 Next.js (static export) inside Capacitor
         |
-   repositories (TypeScript)        SQLite (offline cache + sync queue)
+   repositories (TypeScript)        device storage (query cache + write queue)
         |
    Supabase
      ├─ Auth
@@ -63,15 +64,23 @@ There is no Next.js server. The app is a static bundle, so anything that must be
 - **Catalog values are per 100 g.** Servings are stored as gram weights. Nutrient consumed = per 100 g value × grams eaten / 100.
 - **Sources are recorded per food.** `source_name`, `source_ref` and `verification_status` say where each number came from. Values that have not been checked against a source are never marked `verified`.
 
-## Logging food
+## Logging food and working offline
 
 Discover searches the catalog with `search_foods` (English and Tagalog names, small typos) and lists recent foods and the Filipino dishes. Picking a food opens the food sheet; Add closes it at once.
 
-- **Adding** makes the entry id on the device and puts the entry in an in-memory outbox (`src/features/food-diary/outbox.ts`). Home and Diary show it straight away, marked "Saving…", with numbers from the client calculator. When `log_food_item` answers, the server's row replaces it. If the call fails, the entry stays on screen as "Not saved" with Retry (same id, so never a duplicate) and Remove, and it is left out of the day's totals.
-- **Editing and removing** change the cached day at once and call `update_food_log_item` / `delete_food_log_item`. On failure the change is undone and a message says so.
-- Entries are saved against the device's local date. Diary can step back to earlier days, and adding from there logs to that day.
+Every diary write (add, edit, remove) goes through a write queue (`src/features/food-diary/sync-queue.ts`), online or not:
 
-Not yet: the outbox lives in memory, so closing the app loses unsaved entries and nothing retries by itself. The SQLite sync queue (phase 07) replaces it.
+- The change is saved to device storage first, then sent. Closing the app or losing signal never loses it.
+- Changes go to the server one at a time, in the order they were made. Adds carry an id made on the device and the RPCs are idempotent on it, so a change sent twice does no harm.
+- No connection or an expired token: the queue waits and resumes when the device is back online, when the app returns to the foreground, and every 15 seconds while something waits.
+- The server refuses an add: it stays on screen as "Not saved" with Retry and Remove, and is left out of totals. The server refuses an edit or delete: it is undone and a message says so.
+- Removing an entry whose add hasn't been sent yet just drops it from the queue.
+
+Screens show the saved diary with queued changes applied on top (`queue-model.ts`, unit-tested), marked "Saving…" or "Waiting for connection". Signing out with changes still queued asks first, because it deletes them from the device.
+
+Reads are cached on the device too (TanStack Query persister, 7 days): profile, targets, diary days, recent foods, the browse lists and Progress history open offline. Catalog search needs a connection; Discover says so and points to the lists that work offline.
+
+Storage is Capacitor Preferences behind `src/infrastructure/storage/device-store.ts`, not SQLite. The queue and cache are small, Preferences is already installed and runs the same in the browser, and a native SQLite plugin could not be run on a device in this setup. Move to SQLite behind the same module if the cache grows (for example, the whole catalog for offline search).
 
 ## Progress
 

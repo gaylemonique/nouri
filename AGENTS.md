@@ -20,7 +20,7 @@ Rules for anyone writing code in this repository, human or agent. Read `README.m
 | Forms | React Hook Form + Zod |
 | UI state | Zustand, only for state that is not server data |
 | Backend | Supabase: Postgres, Auth, RPC functions, Edge Functions when Postgres cannot do the job |
-| Offline | Capacitor SQLite, with a browser fallback for development |
+| Offline | Capacitor Preferences behind `src/infrastructure/storage/device-store.ts` (write queue, TanStack Query persister). SQLite only if the cache outgrows it |
 | Charts | Recharts |
 | Tests | Vitest, Playwright, SQL checks in `supabase/tests` |
 
@@ -65,7 +65,7 @@ screen / component
 
 ## Client data rules
 
-- Writes are optimistic: generate the entry UUID on the device, update the query cache, call the RPC with that id, roll back on error. The RPC is idempotent on the id, so retries and offline replays are safe.
+- Diary writes go through `syncQueue` (`src/features/food-diary/sync-queue.ts`), never straight to a repository: the entry UUID is made on the device, the change is stored before it is sent, and screens draw queued changes on top of the cache. The RPCs are idempotent on the id, so retries and offline replays are safe.
 - Use the user's local calendar date for `log_date`. Never derive it from a UTC timestamp on the server.
 - Production screens show database data or a clearly marked pending local entry. No mock numbers outside prototypes and tests.
 - Screen gating (`AuthGate`) is a convenience, not security. Every protection lives in RLS and grants.

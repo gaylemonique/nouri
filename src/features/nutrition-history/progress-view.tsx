@@ -6,6 +6,7 @@ import { ScreenHeader, SectionTitle } from "@/components/shared/screen";
 import { ChoiceGroup } from "@/components/ui/choice-group";
 import { dayStatus, summarizeDays, TARGET_BAND, type DayStatus } from "@/domain/goals/day-status";
 import { useSession } from "@/features/auth/use-session";
+import { useOnline } from "@/features/food-diary/sync-queue";
 import { useGoals } from "@/features/profile/use-profile";
 import { useToday } from "@/hooks/use-today";
 import { formatKcal } from "@/utils/format";
@@ -19,6 +20,7 @@ export function ProgressView() {
   const { days, isError, refetch } = useProgressDays(today);
   const goals = useGoals(useSession().session?.user.id);
   const target = goals.data?.calorie_goal ?? null;
+  const online = useOnline();
 
   return (
     <>
@@ -43,6 +45,10 @@ export function ProgressView() {
             Try again
           </button>
         </div>
+      ) : !days && !online ? (
+        <p role="status" className="rounded-card border border-line px-4 py-6 text-center text-sm text-ink-muted">
+          Your history isn&apos;t saved on this phone yet. It shows once you&apos;re back online.
+        </p>
       ) : !days || goals.isPending ? (
         <p role="status" className="sr-only">
           Loading

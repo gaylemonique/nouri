@@ -9,6 +9,7 @@ import { ChoiceGroup } from "@/components/ui/choice-group";
 import { calculateConsumed } from "@/domain/nutrition/calculate";
 import { FoodSheet, type FoodSheetStart } from "@/features/food-diary/food-sheet";
 import { isMeal, mealLabel, type MealType } from "@/features/food-diary/meals";
+import { useOnline } from "@/features/food-diary/sync-queue";
 import { useToday } from "@/hooks/use-today";
 import type { CatalogFood } from "@/services/repositories/food-repository";
 import { formatGrams, formatKcal, parseLogDate, relativeDayLabel, toLogDate } from "@/utils/format";
@@ -44,6 +45,7 @@ export function DiscoverView() {
   const categories = FILTERS.find((f) => f.value === filter)?.categories ?? null;
   const browsing = !query.trim() && filter === "all";
   const results = useFoodSearch(debounced, categories);
+  const online = useOnline();
 
   const open = (food: CatalogFood) => {
     if (logDate) setSheet({ mode: "add", food, meal, logDate });
@@ -80,6 +82,11 @@ export function DiscoverView() {
 
       {browsing ? (
         <Browse onOpen={open} />
+      ) : !online && !results.data ? (
+        <div role="status" className="rounded-card border border-line px-4 py-6 text-center">
+          <p className="font-medium">Search needs a connection</p>
+          <p className="mt-1 text-sm text-ink-muted">Clear the search to see your recent foods and the Filipino dishes, which work offline.</p>
+        </div>
       ) : results.isError ? (
         <Problem onRetry={() => void results.refetch()} />
       ) : !results.data ? (

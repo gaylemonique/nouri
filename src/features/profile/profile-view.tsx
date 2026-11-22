@@ -5,6 +5,7 @@ import { ScreenHeader, SectionTitle } from "@/components/shared/screen";
 import { Sheet } from "@/components/ui/sheet";
 import { useSession } from "@/features/auth/use-session";
 import { useSignOut } from "@/features/auth/use-sign-out";
+import { usePendingCount } from "@/features/food-diary/sync-queue";
 import type { Profile } from "@/services/repositories/profile-repository";
 import { formatKcal } from "@/utils/format";
 import { GoalsForm } from "./goals-form";
@@ -35,6 +36,8 @@ export function ProfileView() {
   const goals = useGoals(userId);
   const saveGoals = useSaveGoals(userId);
   const signOut = useSignOut();
+  const pending = usePendingCount();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [editingGoals, setEditingGoals] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -96,13 +99,29 @@ export function ProfileView() {
           </div>
         </section>
 
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="h-12 w-full rounded-lg border border-line font-medium hover:border-ink-muted"
-        >
-          Sign out
-        </button>
+        {/* Signing out deletes this device's queue; say so before that loses entries. */}
+        {confirmSignOut && pending > 0 ? (
+          <div role="alert" className="space-y-2 rounded-card border border-ink p-4">
+            <p className="text-sm">
+              {pending === 1 ? "1 change hasn't" : `${pending} changes haven't`} reached Nouri yet. Signing out now deletes{" "}
+              {pending === 1 ? "it" : "them"} from this phone. Connect to the internet first to keep {pending === 1 ? "it" : "them"}.
+            </p>
+            <button type="button" onClick={() => void signOut()} className="h-12 w-full rounded-lg border border-ink font-medium">
+              Sign out and delete {pending === 1 ? "it" : "them"}
+            </button>
+            <button type="button" onClick={() => setConfirmSignOut(false)} className="h-11 w-full text-sm text-ink-muted hover:text-ink">
+              Stay signed in
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => (pending > 0 ? setConfirmSignOut(true) : void signOut())}
+            className="h-12 w-full rounded-lg border border-line font-medium hover:border-ink-muted"
+          >
+            Sign out
+          </button>
+        )}
       </div>
 
       <Sheet open={editingGoals} onClose={() => setEditingGoals(false)} title="Daily targets">

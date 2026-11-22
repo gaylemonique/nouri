@@ -1,22 +1,16 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { calculateConsumed } from "@/domain/nutrition/calculate";
 import { useSession } from "@/features/auth/use-session";
-import {
-  deleteEntry,
-  fetchDiaryDay,
-  logFood,
-  updateEntry,
-  withServerNumbers,
-  type DiaryEntry,
-  type ServingChoice,
-  type UpdateEntryInput,
-} from "@/services/repositories/diary-repository";
+import { fetchDiaryDay, type DiaryEntry, type ServingChoice } from "@/services/repositories/diary-repository";
 import type { CatalogFood } from "@/services/repositories/food-repository";
 import type { MealType } from "./meals";
-import { outbox, useOutboxEntries, type OutboxEntry } from "./outbox";
+import { applyQueue, type DayEntry } from "./queue-model";
+import { syncQueue, useQueuedOps } from "./sync-queue";
+
+export type { DayEntry } from "./queue-model";
 
 export const diaryKeys = {
   all: (userId: string) => ["diary", userId] as const,
@@ -25,15 +19,13 @@ export const diaryKeys = {
   totals: (userId: string) => ["daily-totals", userId] as const,
 };
 
-export type DayEntry = DiaryEntry & { status: "saved" | OutboxEntry["status"] };
-
 function useUserId(): string {
-  const { session } = useSession();
   // Diary screens render only inside AuthGate, which waits for a session.
-  return session?.user.id ?? "";
+  return useSession().session?.user.id ?? "";
 }
 
-// Saved entries from the server plus anything still in the outbox for that day.
+// The saved day from the server (or the device cache when offline) with
+// every queued change for that day applied on top.
 export function useDiaryDay(logDate: string | null) {
   const userId = useUserId();
   const query = useQuery({
@@ -41,18 +33,17 @@ export function useDiaryDay(logDate: string | null) {
     queryFn: () => fetchDiaryDay(logDate!),
     enabled: Boolean(userId && logDate),
   });
-  const pending = useOutboxEntries(logDate);
-  const entries = useMemo<DayEntry[]>(() => {
-    const saved = (query.data ?? []).map((e) => ({ ...e, status: "saved" as const }));
-    const savedIds = new Set(saved.map((e) => e.id));
-    return [...saved, ...pending.filter((e) => !savedIds.has(e.id))];
-  }, [query.data, pending]);
+  const ops = useQueuedOps();
+  const entries = useMemo<DayEntry[]>(
+    () => (logDate ? applyQueue(query.data ?? [], ops, logDate) : []),
+    [query.data, ops, logDate],
+  );
   return { ...query, entries };
 }
 
 export type DayTotals = { calories: number; protein_g: number; carbohydrates_g: number; fat_g: number };
 
-// Entries that failed to save are left out: they are not in the diary.
+// Adds the server refused are left out: they are not in the diary.
 export function dayTotals(entries: DayEntry[]): DayTotals {
   return entries
     .filter((e) => e.status !== "failed")
@@ -67,136 +58,64 @@ export function dayTotals(entries: DayEntry[]): DayTotals {
     );
 }
 
-function send(queryClient: QueryClient, userId: string, entry: OutboxEntry) {
-  const key = diaryKeys.day(userId, entry.logDate);
-  outbox.setStatus(entry.id, "saving");
-  logFood(entry.input)
-    .then((row) => {
-      const saved: DiaryEntry = { ...entry };
-      delete (saved as Partial<OutboxEntry>).status;
-      delete (saved as Partial<OutboxEntry>).input;
-      const cached = queryClient.getQueryData<DiaryEntry[]>(key);
-      if (cached) {
-        queryClient.setQueryData<DiaryEntry[]>(key, [...cached.filter((e) => e.id !== entry.id), withServerNumbers(saved, row)]);
-      } else {
-        void queryClient.invalidateQueries({ queryKey: key });
-      }
-      outbox.remove(entry.id);
-      void queryClient.invalidateQueries({ queryKey: diaryKeys.recent(userId) });
-      void queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) });
-    })
-    .catch(() => outbox.setStatus(entry.id, "failed"));
-}
-
 export type AddFoodInput = { food: CatalogFood; meal: MealType; logDate: string; quantity: number } & ServingChoice;
 
-// Optimistic add: the entry shows at once with the client calculator's
-// numbers and a device-made id. The RPC is idempotent on that id, so Retry
-// can never create a duplicate.
+// The entry id is made on the device; the RPC is idempotent on it.
 export function useAddFood() {
-  const queryClient = useQueryClient();
-  const userId = useUserId();
-  return useCallback(
-    ({ food, meal, logDate, quantity, ...serving }: AddFoodInput) => {
-      const id = crypto.randomUUID();
-      const picked = serving.servingId ? food.servings.find((s) => s.id === serving.servingId) : undefined;
-      const servingGrams = picked ? picked.grams : (serving.servingGrams ?? 0);
-      const entry: OutboxEntry = {
-        id,
-        logDate,
-        meal,
-        foodId: food.id,
-        foodName: food.name,
+  return useCallback(({ food, meal, logDate, quantity, ...serving }: AddFoodInput) => {
+    const id = crypto.randomUUID();
+    const picked = serving.servingId ? food.servings.find((s) => s.id === serving.servingId) : undefined;
+    const servingGrams = picked ? picked.grams : (serving.servingGrams ?? 0);
+    const entry: DiaryEntry = {
+      id,
+      logDate,
+      meal,
+      foodId: food.id,
+      foodName: food.name,
+      servingId: picked?.id ?? null,
+      servingName: picked?.name ?? null,
+      servingGrams,
+      quantity,
+      per100: food.per100,
+      consumed: calculateConsumed(food.per100, servingGrams, quantity),
+      servings: food.servings,
+      verification: food.verification,
+      source: food.source,
+    };
+    syncQueue.add({
+      opId: crypto.randomUUID(),
+      kind: "add",
+      logDate,
+      entry,
+      input: { id, logDate, meal, foodId: food.id, quantity, ...serving },
+      failed: false,
+    });
+  }, []);
+}
+
+export function useUpdateEntry() {
+  return useCallback((entry: DayEntry, change: { meal: MealType; quantity: number } & ServingChoice) => {
+    const picked = change.servingId ? entry.servings.find((s) => s.id === change.servingId) : undefined;
+    syncQueue.update({
+      opId: crypto.randomUUID(),
+      kind: "update",
+      logDate: entry.logDate,
+      entryId: entry.id,
+      foodName: entry.foodName,
+      change: {
+        meal: change.meal,
+        quantity: change.quantity,
         servingId: picked?.id ?? null,
         servingName: picked?.name ?? null,
-        servingGrams,
-        quantity,
-        per100: food.per100,
-        consumed: calculateConsumed(food.per100, servingGrams, quantity),
-        servings: food.servings,
-        verification: food.verification,
-        source: food.source,
-        status: "saving",
-        input: { id, logDate, meal, foodId: food.id, quantity, ...serving } as OutboxEntry["input"],
-      };
-      outbox.put(entry);
-      send(queryClient, userId, entry);
-    },
-    [queryClient, userId],
-  );
+        servingGrams: picked ? picked.grams : (change.servingGrams ?? entry.servingGrams),
+      },
+      input: { id: entry.id, ...change },
+    });
+  }, []);
 }
 
-export function useRetryAdd() {
-  const queryClient = useQueryClient();
-  const userId = useUserId();
-  return useCallback(
-    (id: string) => {
-      const entry = outbox.get(id);
-      if (entry) send(queryClient, userId, entry);
-    },
-    [queryClient, userId],
-  );
-}
-
-type Snapshot = { key: readonly unknown[]; previous: DiaryEntry[] | undefined };
-
-export function useUpdateEntry(logDate: string) {
-  const queryClient = useQueryClient();
-  const userId = useUserId();
-  const key = diaryKeys.day(userId, logDate);
-  return useMutation({
-    mutationFn: (input: UpdateEntryInput) => updateEntry(input),
-    onMutate: async (input): Promise<Snapshot> => {
-      await queryClient.cancelQueries({ queryKey: key });
-      const previous = queryClient.getQueryData<DiaryEntry[]>(key);
-      queryClient.setQueryData<DiaryEntry[]>(key, (old) =>
-        old?.map((e) => {
-          if (e.id !== input.id) return e;
-          const picked = input.servingId ? e.servings.find((s) => s.id === input.servingId) : undefined;
-          const servingGrams = picked ? picked.grams : (input.servingGrams ?? e.servingGrams);
-          // Same rule as the server: rescale from the entry's own snapshot.
-          return {
-            ...e,
-            meal: input.meal,
-            quantity: input.quantity,
-            servingId: picked?.id ?? null,
-            servingName: picked?.name ?? null,
-            servingGrams,
-            consumed: calculateConsumed(e.per100, servingGrams, input.quantity),
-          };
-        }),
-      );
-      return { key, previous };
-    },
-    onError: (_error, input, context) => {
-      if (context) queryClient.setQueryData(context.key, context.previous);
-      const name = context?.previous?.find((e) => e.id === input.id)?.foodName ?? "the entry";
-      outbox.notify(`Couldn't save your change to ${name}, so it is back to how it was. Try again.`);
-    },
-    onSuccess: (row) => {
-      queryClient.setQueryData<DiaryEntry[]>(key, (old) => old?.map((e) => (e.id === row.id ? withServerNumbers(e, row) : e)));
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) }),
-  });
-}
-
-export function useDeleteEntry(logDate: string) {
-  const queryClient = useQueryClient();
-  const userId = useUserId();
-  const key = diaryKeys.day(userId, logDate);
-  return useMutation({
-    mutationFn: (id: string) => deleteEntry(id),
-    onMutate: async (id): Promise<Snapshot> => {
-      await queryClient.cancelQueries({ queryKey: key });
-      const previous = queryClient.getQueryData<DiaryEntry[]>(key);
-      queryClient.setQueryData<DiaryEntry[]>(key, (old) => old?.filter((e) => e.id !== id));
-      return { key, previous };
-    },
-    onError: (_error, id, context) => {
-      if (context) queryClient.setQueryData(context.key, context.previous);
-      const name = context?.previous?.find((e) => e.id === id)?.foodName ?? "the entry";
-      outbox.notify(`Couldn't remove ${name}. It is still in your diary. Try again.`);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) }),
-  });
+export function useDeleteEntry() {
+  return useCallback((entry: DayEntry) => {
+    syncQueue.remove({ opId: crypto.randomUUID(), kind: "delete", logDate: entry.logDate, entryId: entry.id, foodName: entry.foodName });
+  }, []);
 }

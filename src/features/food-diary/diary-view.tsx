@@ -11,6 +11,7 @@ import { DiaryNotice } from "./diary-notice";
 import { EntryRow } from "./entry-row";
 import { FoodSheet, type FoodSheetStart } from "./food-sheet";
 import { MEALS } from "./meals";
+import { useOnline } from "./sync-queue";
 import { dayTotals, useDiaryDay } from "./use-diary";
 
 export function DiaryView() {
@@ -28,6 +29,7 @@ export function DiaryView() {
   const day = today ? addDays(today, offset) : null;
   const logDate = day ? toLogDate(day) : null;
   const diary = useDiaryDay(logDate);
+  const online = useOnline();
   const total = dayTotals(diary.entries);
   const dateParam = offset === 0 || !logDate ? "" : `&date=${logDate}`;
 
@@ -69,6 +71,12 @@ export function DiaryView() {
           </div>
         ))}
       </dl>
+
+      {!online && !diary.data ? (
+        <p role="status" className="mb-6 rounded-card border border-line px-4 py-4 text-center text-sm text-ink-muted">
+          This day isn&apos;t saved on this phone yet. What you add now is kept and syncs when you&apos;re back online.
+        </p>
+      ) : null}
 
       {diary.isError && !diary.data ? (
         <div role="alert" className="mb-6 rounded-card border border-line px-4 py-5 text-center">
