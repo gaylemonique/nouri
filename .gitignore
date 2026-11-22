@@ -9,3 +9,8 @@ supabase/.branches/
 *.tsbuildinfo
 next-env.d.ts
 .claude/
+
+# Android release signing: never commit the upload key or its passwords
+*.jks
+*.keystore
+android/keystore.properties

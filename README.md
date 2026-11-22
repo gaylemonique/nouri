@@ -14,7 +14,7 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 05 | Home, Diary, Discover and the food sheet on real data: catalog search, adding, editing and removing entries with optimistic updates | Done |
 | 06 | Progress on real data: 7-day calories against target, 30-day grid of days within target, today's macro split | Done |
 | 07 | Offline: persisted write queue that replays in order, device cache of reads, offline states on every screen | Done, checked in the browser with simulated offline; not yet on a phone |
-| 08 | Store builds | Not started |
+| 08 | Google Play prep: final app id, release signing, in-app account deletion, backups off, release checklist and listing draft (`docs/release.md`) | In progress. Blocked on icon, privacy policy URL, email sender, first build on a phone |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
 
@@ -38,7 +38,7 @@ npm run dev                    # http://localhost:3000
 | `npm run test:catalog` | Tests for the recipe calculator |
 | `npm run cap:sync` | Build, then copy `out/` into the native projects |
 
-To run on Android: `npm run cap:sync`, then `npx cap open android` and run from Android Studio (needs Android Studio with JDK 21). iOS needs a Mac with Xcode; the `ios/` project has not been added yet.
+To run on Android: `npm run cap:sync`, then `npx cap open android` and run from Android Studio (needs Android Studio with JDK 21). iOS needs a Mac with Xcode; the `ios/` project has not been added yet. Release builds for Google Play: [`docs/release.md`](docs/release.md).
 
 ## How it fits together
 
@@ -126,6 +126,7 @@ Functions exposed over RPC:
 | `search_foods` | Name and alias search with trigram matching |
 | `recent_foods` | Foods the user logged most recently |
 | `daily_nutrition_totals` | Per-day totals for a date range, for the dashboard and charts |
+| `delete_my_account` | Deletes the caller's account and, by cascade, all their data |
 
 The catalog is readable by signed-in users and writable only through migrations or the service role.
 
@@ -144,6 +145,7 @@ src/
 tests/unit/          Vitest tests
 android/             Capacitor Android project
 docs/design.md       colours, type, spacing and the reasons for them
+docs/release.md      Google Play: signing, build, forms, what still blocks a release
 catalog/
   recipes.json       Filipino dish recipes behind the estimated values
   usda-ingredients.json  USDA values for every recipe ingredient
@@ -171,6 +173,7 @@ npx supabase db push --remote
 npx supabase db query --remote --yes -f supabase/tests/diary_checks.sql
 npx supabase db query --remote --yes -f supabase/tests/catalog_checks.sql
 npx supabase db query --remote --yes -f supabase/tests/profile_checks.sql
+npx supabase db query --remote --yes -f supabase/tests/account_checks.sql
 
 # test the recipe calculator
 node --test "catalog/*.test.mjs"
