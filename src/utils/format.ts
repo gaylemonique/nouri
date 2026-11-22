@@ -25,3 +25,18 @@ export function startOfDay(d: Date): Date {
 export function addDays(d: Date, days: number): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
 }
+
+// log_date is the user's local calendar day, never derived from UTC.
+export function toLogDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+// "2026-11-20" -> local midnight that day, or null for anything that is not a real date.
+export function parseLogDate(s: string | null | undefined): Date | null {
+  const match = s ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(s) : null;
+  if (!match) return null;
+  const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return toLogDate(d) === s ? d : null;
+}
