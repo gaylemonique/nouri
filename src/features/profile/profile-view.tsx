@@ -8,6 +8,7 @@ import { useSignOut } from "@/features/auth/use-sign-out";
 import { usePendingCount } from "@/features/food-diary/sync-queue";
 import type { Profile } from "@/services/repositories/profile-repository";
 import { formatKcal } from "@/utils/format";
+import { DeleteAccount } from "./delete-account";
 import { GoalsForm } from "./goals-form";
 import { useGoals, useProfile, useSaveGoals } from "./use-profile";
 
@@ -122,6 +123,8 @@ export function ProfileView() {
             Sign out
           </button>
         )}
+
+        <DeleteAccount email={session!.user.email} />
       </div>
 
       <Sheet open={editingGoals} onClose={() => setEditingGoals(false)} title="Daily targets">

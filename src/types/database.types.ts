@@ -374,6 +374,7 @@ export type Database = {
         }[]
       }
       delete_food_log_item: { Args: { p_id: string }; Returns: boolean }
+      delete_my_account: { Args: never; Returns: undefined }
       log_food_item: {
         Args: {
           p_food_id: string

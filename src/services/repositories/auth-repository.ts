@@ -29,3 +29,13 @@ export function watchSession(listener: (event: AuthChangeEvent, session: Session
   const { data } = getSupabase().auth.onAuthStateChange(listener);
   return () => data.subscription.unsubscribe();
 }
+
+// Deletes the account and everything it owns on the server (delete_my_account
+// cascades). The session on this device is then useless, so it is cleared
+// locally; that call may fail because the user no longer exists.
+export async function deleteAccount(): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) throw error;
+  await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+}
