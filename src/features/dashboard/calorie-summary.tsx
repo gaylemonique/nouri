@@ -1,8 +1,26 @@
+import Link from "next/link";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatKcal } from "@/utils/format";
 
 // The one number people open the app for: how much is left today.
-export function CalorieSummary({ eaten, target }: { eaten: number; target: number }) {
+export function CalorieSummary({ eaten, target }: { eaten: number; target: number | null }) {
+  if (target === null) {
+    return (
+      <section aria-label="Calories today" className="rounded-card border border-line bg-surface px-4 pt-4 pb-5">
+        <p className="text-5xl font-semibold leading-none tracking-tight">
+          {formatKcal(eaten)}
+          <span className="ml-2 text-base font-normal tracking-normal text-ink-muted">kcal eaten</span>
+        </p>
+        <p className="mt-3 text-sm text-ink-muted">
+          No calorie target yet.{" "}
+          <Link href="/profile/" className="font-medium text-accent">
+            Set one in Profile
+          </Link>
+        </p>
+      </section>
+    );
+  }
+
   const remaining = target - eaten;
   const over = remaining < 0;
   return (

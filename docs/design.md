@@ -58,6 +58,8 @@ Rules that came out of building them:
 - Today is still in progress, so it is drawn on charts but left out of averages and counts.
 - Nutrients without a source value say "No data for this food" instead of showing 0.
 - Estimated foods say so in every list row and in the food sheet.
+- An entry still saving shows "Saving…" and can't be opened yet. One that failed says "Not saved" with Retry and Remove, and is left out of totals.
+- A macro without a target shows its grams and "no target" with an empty dashed track instead of a bar.
 - Lists are full-width rows, not cards. Cards are kept for the calorie summary and the sign-in panel, the two things that should stand apart.
 
 ## Shared components
@@ -66,7 +68,7 @@ Rules that came out of building them:
 
 ## Sample data during design
 
-Sign-in, onboarding and Profile read and write Supabase. Until the other screens do, they use `src/fixtures/sample-data.ts`. Food values there are copied from the real catalog and run through the same calculator as the server, so every number is true for that food. The diary, targets and history are made up, and every screen that shows them carries a "Sample data" note. Buttons that would save something say "not connected yet" when tapped. Wiring a screen means deleting its fixture import and its note.
+Every screen except Progress reads and writes Supabase. Progress still uses `src/fixtures/sample-data.ts`: food values there come from the real catalog, but the history and targets are made up, so the screen carries a "Sample data" note. Wiring it means deleting the fixture import and the note.
 
 ## Motion
 

@@ -1,10 +1,11 @@
-// Prototype data for designing the screens before they are wired to Supabase.
+// Prototype data for the Progress screen, the one screen not yet wired to
+// Supabase (phase 06). Home, Diary and Discover read real data.
 //
 // Food values are copied from the real catalog (USDA rows and the recipe
 // estimates in catalog/recipes.json), so every number shown is true for that
 // food. The diary, targets, week and month are made up and every screen that
-// shows them says "Sample data". Delete this file when the screens read from
-// repositories (phases 05 and 06).
+// shows them says "Sample data". Delete this file when Progress reads
+// daily_nutrition_totals.
 import { calculateConsumed, type ConsumedNutrients, type NutrientsPer100g } from "@/domain/nutrition/calculate";
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
@@ -134,4 +135,3 @@ export const SAMPLE_MONTH: DayStatus[] = (
   "in in over in none in under in in over in in in none none in over in in under in in in over in in in none in in"
 ).split(" ") as DayStatus[];
 
-export const RECENT_FOOD_IDS = ["chicken-adobo", "rice", "pandesal", "banana", "egg"];

@@ -1,9 +1,11 @@
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatGrams } from "@/utils/format";
 
-type Macro = { label: string; eaten: number; target: number; fill: string };
+type Pair = [eaten: number, target: number | null];
+type Macro = { label: string; eaten: number; target: number | null; fill: string };
 
-export function MacroList({ protein, carbs, fat }: { protein: [number, number]; carbs: [number, number]; fat: [number, number] }) {
+// A macro without a target is still tracked: the grams show, the bar doesn't.
+export function MacroList({ protein, carbs, fat }: { protein: Pair; carbs: Pair; fat: Pair }) {
   const macros: Macro[] = [
     { label: "Protein", eaten: protein[0], target: protein[1], fill: "bg-protein" },
     { label: "Carbs", eaten: carbs[0], target: carbs[1], fill: "bg-carbs" },
@@ -17,10 +19,14 @@ export function MacroList({ protein, carbs, fat }: { protein: [number, number]; 
             <span className="font-medium">{m.label}</span>
             <span>
               <span className="font-semibold">{formatGrams(m.eaten)}</span>
-              <span className="text-ink-muted"> / {formatGrams(m.target)} g</span>
+              <span className="text-ink-muted">{m.target === null ? " g · no target" : ` / ${formatGrams(m.target)} g`}</span>
             </span>
           </div>
-          <ProgressBar value={m.eaten} max={m.target} fillClass={m.fill} label={`${m.label} eaten against target`} />
+          {m.target === null ? (
+            <div aria-hidden className="h-1.5 w-full rounded-full border border-dashed border-line" />
+          ) : (
+            <ProgressBar value={m.eaten} max={m.target} fillClass={m.fill} label={`${m.label} eaten against target`} />
+          )}
         </li>
       ))}
     </ul>

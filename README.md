@@ -11,7 +11,8 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 00 | Next.js static export, Capacitor with Android, Tailwind, env validation, Supabase client | Done |
 | 01 | All five screens and the food sheet designed and interactive, on labelled sample data (see `docs/design.md`) | Done |
 | 03 | Email and password sign-in, onboarding (name and daily targets), Profile reads and edits real targets | Done, see [Sign-in](#sign-in) for what waits on an email sender |
-| 05 to 08 | Diary UI on real data, analytics, offline sync, store builds | Not started |
+| 05 | Home, Diary, Discover and the food sheet on real data: catalog search, adding, editing and removing entries with optimistic updates | Done. Progress still shows sample data |
+| 06 to 08 | Progress on real data, offline sync, store builds | Not started |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
 
@@ -60,6 +61,16 @@ There is no Next.js server. The app is a static bundle, so anything that must be
 - **Postgres functions instead of Edge Functions for now.** A function runs inside one transaction, sees RLS, needs no service-role key in any client and has no cold start. Edge Functions are kept for work Postgres cannot do, such as calling an external food API during imports.
 - **Catalog values are per 100 g.** Servings are stored as gram weights. Nutrient consumed = per 100 g value × grams eaten / 100.
 - **Sources are recorded per food.** `source_name`, `source_ref` and `verification_status` say where each number came from. Values that have not been checked against a source are never marked `verified`.
+
+## Logging food
+
+Discover searches the catalog with `search_foods` (English and Tagalog names, small typos) and lists recent foods and the Filipino dishes. Picking a food opens the food sheet; Add closes it at once.
+
+- **Adding** makes the entry id on the device and puts the entry in an in-memory outbox (`src/features/food-diary/outbox.ts`). Home and Diary show it straight away, marked "Saving…", with numbers from the client calculator. When `log_food_item` answers, the server's row replaces it. If the call fails, the entry stays on screen as "Not saved" with Retry (same id, so never a duplicate) and Remove, and it is left out of the day's totals.
+- **Editing and removing** change the cached day at once and call `update_food_log_item` / `delete_food_log_item`. On failure the change is undone and a message says so.
+- Entries are saved against the device's local date. Diary can step back to earlier days, and adding from there logs to that day.
+
+Not yet: the outbox lives in memory, so closing the app loses unsaved entries and nothing retries by itself. The SQLite sync queue (phase 07) replaces it.
 
 ## Sign-in
 
@@ -110,7 +121,7 @@ src/
   components/        ui/ primitives, navigation/, shared/ screen parts
   features/          auth, dashboard, food-diary, food-search, nutrition-history, profile
   services/repositories/  the only code that calls Supabase
-  fixtures/          labelled sample data used until screens read from Supabase
+  fixtures/          labelled sample data, used only by Progress now
   hooks/ utils/      device date, number and date formatting
   domain/            nutrition formula (client copy of the server's), macro split for goals
   infrastructure/    Supabase client and env validation

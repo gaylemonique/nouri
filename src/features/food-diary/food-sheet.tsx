@@ -5,48 +5,98 @@ import { ChoiceGroup } from "@/components/ui/choice-group";
 import { Sheet } from "@/components/ui/sheet";
 import { Stepper } from "@/components/ui/stepper";
 import { calculateConsumed } from "@/domain/nutrition/calculate";
-import { MEALS, type CatalogFood, type MealType } from "@/fixtures/sample-data";
+import type { CatalogFood } from "@/services/repositories/food-repository";
 import { formatGrams, formatKcal } from "@/utils/format";
+import { MEALS, mealLabel, type MealType } from "./meals";
+import { useAddFood, useDeleteEntry, useUpdateEntry, type DayEntry } from "./use-diary";
 
-export type FoodSheetStart = {
-  food: CatalogFood;
-  meal: MealType;
-  mode: "add" | "edit";
-  servingName?: string;
-  servingGrams?: number;
-  quantity?: number;
-};
+export type FoodSheetStart =
+  | { mode: "add"; food: CatalogFood; meal: MealType; logDate: string }
+  | { mode: "edit"; entry: DayEntry };
 
 const CUSTOM = "custom";
 
-export function FoodSheet({ start, onClose }: { start: FoodSheetStart | null; onClose: () => void }) {
+export function FoodSheet({
+  start,
+  onClose,
+  onAdded,
+}: {
+  start: FoodSheetStart | null;
+  onClose: () => void;
+  onAdded?: (message: string) => void;
+}) {
+  const title = start ? (start.mode === "add" ? start.food.name : start.entry.foodName) : "";
+  const key = start ? (start.mode === "add" ? `add-${start.food.id}` : `edit-${start.entry.id}`) : "none";
   return (
-    <Sheet open={start !== null} onClose={onClose} title={start?.food.name ?? ""}>
-      {/* Keyed by food so each opening starts from that food's defaults. */}
-      {start ? <FoodSheetBody key={`${start.food.id}-${start.mode}-${start.servingName}`} start={start} /> : null}
+    <Sheet open={start !== null} onClose={onClose} title={title}>
+      {/* Keyed so each opening starts from that food's or entry's values. */}
+      {start ? <FoodSheetBody key={key} start={start} onClose={onClose} onAdded={onAdded} /> : null}
     </Sheet>
   );
 }
 
-function FoodSheetBody({ start }: { start: FoodSheetStart }) {
-  const { food } = start;
-  const initialServing =
-    food.servings.find((s) => s.name === start.servingName) ??
-    (start.servingName ? undefined : food.servings.find((s) => s.isDefault) ?? food.servings[0]);
+// What the sheet needs from a catalog food or a logged entry. Entries use
+// their own per 100 g snapshot, the same values the server rescales from.
+function describe(start: FoodSheetStart) {
+  if (start.mode === "add") {
+    const { food } = start;
+    const serving = food.servings.find((s) => s.isDefault) ?? food.servings[0];
+    return { per100: food.per100, servings: food.servings, verification: food.verification, source: food.source,
+      servingId: serving?.id ?? CUSTOM, grams: 100, quantity: 1, meal: start.meal };
+  }
+  const { entry } = start;
+  const known = entry.servings.some((s) => s.id === entry.servingId);
+  return { per100: entry.per100, servings: entry.servings, verification: entry.verification, source: entry.source,
+    servingId: known && entry.servingId ? entry.servingId : CUSTOM,
+    grams: known ? 100 : entry.consumed.grams, quantity: known ? entry.quantity : 1, meal: entry.meal };
+}
 
-  const [servingId, setServingId] = useState<string>(initialServing?.id ?? CUSTOM);
-  const [customGrams, setCustomGrams] = useState<string>(String(start.servingGrams ?? 100));
-  const [quantity, setQuantity] = useState(start.quantity ?? 1);
-  const [meal, setMeal] = useState<MealType>(start.meal);
-  const [notice, setNotice] = useState(false);
+function FoodSheetBody({
+  start,
+  onClose,
+  onAdded,
+}: {
+  start: FoodSheetStart;
+  onClose: () => void;
+  onAdded?: (message: string) => void;
+}) {
+  const food = describe(start);
+  const logDate = start.mode === "add" ? start.logDate : start.entry.logDate;
+  const addFood = useAddFood();
+  const updateEntry = useUpdateEntry(logDate);
+  const deleteEntry = useDeleteEntry(logDate);
+
+  const [servingId, setServingId] = useState<string>(food.servingId);
+  const [customGrams, setCustomGrams] = useState<string>(String(food.grams));
+  const [quantity, setQuantity] = useState(food.quantity);
+  const [meal, setMeal] = useState<MealType>(food.meal);
 
   const serving = food.servings.find((s) => s.id === servingId);
   const parsedGrams = Number(customGrams);
   const gramsValid = servingId !== CUSTOM || (parsedGrams > 0 && parsedGrams <= 5000);
   const servingGrams = serving ? serving.grams : gramsValid ? parsedGrams : 0;
-  const consumed = calculateConsumed(food.per100, servingGrams, servingId === CUSTOM ? 1 : quantity);
+  const amount = servingId === CUSTOM ? 1 : quantity;
+  const consumed = calculateConsumed(food.per100, servingGrams, amount);
+  const choice = serving ? { servingId: serving.id } : { servingGrams: parsedGrams };
 
-  const mealLabel = MEALS.find((m) => m.id === meal)?.label ?? "";
+  // Writes are optimistic: the sheet closes at once and the diary shows the
+  // change, marked while it saves. Failures surface on the diary screens.
+  const save = () => {
+    if (!gramsValid) return;
+    if (start.mode === "add") {
+      addFood({ food: start.food, meal, logDate, quantity: amount, ...choice });
+      onAdded?.(`${start.food.name} added to ${mealLabel(meal).toLowerCase()}.`);
+    } else {
+      updateEntry.mutate({ id: start.entry.id, meal, quantity: amount, ...choice });
+    }
+    onClose();
+  };
+
+  const remove = () => {
+    if (start.mode !== "edit") return;
+    deleteEntry.mutate(start.entry.id);
+    onClose();
+  };
 
   return (
     <div className="space-y-6 pt-1">
@@ -124,21 +174,16 @@ function FoodSheetBody({ start }: { start: FoodSheetStart }) {
       </section>
 
       <div className="space-y-2">
-        {notice ? (
-          <p role="status" className="rounded-lg bg-line/50 px-3 py-2 text-center text-sm text-ink-muted">
-            Saving is not connected yet. Your diary will update here once logging is connected.
-          </p>
-        ) : null}
         <button
           type="button"
           disabled={!gramsValid}
-          onClick={() => setNotice(true)}
+          onClick={save}
           className="h-12 w-full rounded-lg bg-accent font-semibold text-accent-ink disabled:opacity-50"
         >
-          {start.mode === "add" ? `Add to ${mealLabel}` : "Save changes"}
+          {start.mode === "add" ? `Add to ${mealLabel(meal)}` : "Save changes"}
         </button>
         {start.mode === "edit" ? (
-          <button type="button" onClick={() => setNotice(true)} className="h-11 w-full text-sm text-ink-muted hover:text-ink">
+          <button type="button" onClick={remove} className="h-11 w-full text-sm text-ink-muted hover:text-ink">
             Remove from diary
           </button>
         ) : null}

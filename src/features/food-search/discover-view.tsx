@@ -1,53 +1,66 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import { SampleDataNote, ScreenHeader, SectionTitle } from "@/components/shared/screen";
+import { useState } from "react";
+import { ScreenHeader, SectionTitle } from "@/components/shared/screen";
 import { ChoiceGroup } from "@/components/ui/choice-group";
 import { calculateConsumed } from "@/domain/nutrition/calculate";
 import { FoodSheet, type FoodSheetStart } from "@/features/food-diary/food-sheet";
-import { MEALS, RECENT_FOOD_IDS, SAMPLE_FOODS, foodById, type CatalogFood, type MealType } from "@/fixtures/sample-data";
-import { formatGrams, formatKcal } from "@/utils/format";
+import { isMeal, mealLabel, type MealType } from "@/features/food-diary/meals";
+import { useToday } from "@/hooks/use-today";
+import type { CatalogFood } from "@/services/repositories/food-repository";
+import { formatGrams, formatKcal, parseLogDate, relativeDayLabel, toLogDate } from "@/utils/format";
+import { useDebounced, useFilipinoDishes, useFoodSearch, useRecentFoods } from "./use-food-search";
 
 type Filter = "all" | "filipino" | "rice" | "protein" | "fruit";
 
-const FILTERS: { value: Filter; label: string; match: (f: CatalogFood) => boolean }[] = [
-  { value: "all", label: "All", match: () => true },
-  { value: "filipino", label: "Filipino dishes", match: (f) => f.category === "filipino_dish" },
-  { value: "rice", label: "Rice", match: (f) => f.category === "rice_and_grains" },
-  { value: "protein", label: "Meat, fish, eggs", match: (f) => ["meat_and_poultry", "seafood", "eggs_and_dairy"].includes(f.category) },
-  { value: "fruit", label: "Fruit", match: (f) => f.category === "fruits" },
+const FILTERS: { value: Filter; label: string; categories: string[] | null }[] = [
+  { value: "all", label: "All", categories: null },
+  { value: "filipino", label: "Filipino dishes", categories: ["filipino_dish"] },
+  { value: "rice", label: "Rice", categories: ["rice_and_grains"] },
+  { value: "protein", label: "Meat, fish, eggs", categories: ["meat_and_poultry", "seafood", "eggs_and_dairy"] },
+  { value: "fruit", label: "Fruit", categories: ["fruits"] },
 ];
-
-const isMeal = (v: string | null): v is MealType => MEALS.some((m) => m.id === v);
 
 export function DiscoverView() {
   const params = useSearchParams();
+  const today = useToday();
   const mealParam = params.get("meal");
   const meal: MealType = isMeal(mealParam) ? mealParam : "lunch";
-  const mealLabel = MEALS.find((m) => m.id === meal)?.label;
+  // ?date= comes from the Diary when adding to an earlier day. Never the future.
+  const asked = parseLogDate(params.get("date"));
+  const day = asked && today && asked <= today ? asked : today;
+  const logDate = day ? toLogDate(day) : null;
+  const dayNote = day && today && logDate !== toLogDate(today) ? ` · ${relativeDayLabel(day, today)}` : "";
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [sheet, setSheet] = useState<FoodSheetStart | null>(null);
+  const [added, setAdded] = useState<string | null>(null);
 
-  const q = query.trim().toLowerCase();
-  const results = useMemo(() => {
-    const match = FILTERS.find((f) => f.value === filter)?.match ?? (() => true);
-    return SAMPLE_FOODS.filter(
-      (f) => match(f) && (!q || f.name.toLowerCase().includes(q) || f.aliases.some((a) => a.toLowerCase().includes(q))),
-    );
-  }, [q, filter]);
+  const debounced = useDebounced(query);
+  const categories = FILTERS.find((f) => f.value === filter)?.categories ?? null;
+  const browsing = !query.trim() && filter === "all";
+  const results = useFoodSearch(debounced, categories);
 
-  const browsing = !q && filter === "all";
-  const recent = RECENT_FOOD_IDS.map(foodById).filter((f): f is CatalogFood => Boolean(f));
-  const open = (food: CatalogFood) => setSheet({ food, meal, mode: "add" });
+  const open = (food: CatalogFood) => {
+    if (logDate) setSheet({ mode: "add", food, meal, logDate });
+  };
 
   return (
     <>
-      <ScreenHeader title="Discover" kicker={isMeal(mealParam) ? `Adding to ${mealLabel}` : undefined} />
-      <SampleDataNote>Search covers {SAMPLE_FOODS.length} catalog foods here and the full catalog once search is connected.</SampleDataNote>
+      <ScreenHeader title="Discover" kicker={isMeal(mealParam) ? `Adding to ${mealLabel(meal)}${dayNote}` : undefined} />
+
+      {added ? (
+        <p role="status" className="mb-4 flex items-center justify-between gap-3 rounded-lg bg-line/50 px-3 py-2 text-sm">
+          <span>{added}</span>
+          <Link href={dayNote && logDate ? `/diary/?date=${logDate}` : "/diary/"} className="shrink-0 font-medium text-accent">
+            Open diary
+          </Link>
+        </p>
+      ) : null}
 
       <label className="relative mb-3 block">
         <span className="sr-only">Search foods</span>
@@ -66,30 +79,62 @@ export function DiscoverView() {
       </div>
 
       {browsing ? (
-        <div className="space-y-6">
-          <section>
-            <SectionTitle>Recent</SectionTitle>
-            <FoodList foods={recent} onOpen={open} />
-          </section>
-          <section>
-            <SectionTitle aside="Estimated from home recipes">Filipino dishes</SectionTitle>
-            <FoodList foods={SAMPLE_FOODS.filter((f) => f.category === "filipino_dish")} onOpen={open} />
-          </section>
-        </div>
-      ) : results.length ? (
-        <section>
-          <SectionTitle>{results.length === 1 ? "1 food" : `${results.length} foods`}</SectionTitle>
-          <FoodList foods={results} onOpen={open} />
+        <Browse onOpen={open} />
+      ) : results.isError ? (
+        <Problem onRetry={() => void results.refetch()} />
+      ) : !results.data ? (
+        <p role="status" className="py-6 text-center text-sm text-ink-muted">
+          Searching…
+        </p>
+      ) : results.data.length ? (
+        <section aria-busy={results.isFetching}>
+          <SectionTitle>{results.data.length === 1 ? "1 food" : `${results.data.length} foods`}</SectionTitle>
+          <FoodList foods={results.data} onOpen={open} />
         </section>
       ) : (
         <div className="rounded-card border border-line px-4 py-6 text-center">
-          <p className="font-medium">No food matches “{query.trim()}”</p>
-          <p className="mt-1 text-sm text-ink-muted">Try the Tagalog or English name, or a shorter word.</p>
+          <p className="font-medium">{query.trim() ? `No food matches “${query.trim()}”` : "No foods of this type yet"}</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {query.trim() ? "Try the Tagalog or English name, or a shorter word." : "The catalog is still small. Try another type."}
+          </p>
         </div>
       )}
 
-      <FoodSheet start={sheet} onClose={() => setSheet(null)} />
+      <FoodSheet start={sheet} onClose={() => setSheet(null)} onAdded={setAdded} />
     </>
+  );
+}
+
+function Browse({ onOpen }: { onOpen: (f: CatalogFood) => void }) {
+  const recent = useRecentFoods();
+  const dishes = useFilipinoDishes();
+  return (
+    <div className="space-y-6">
+      <section>
+        <SectionTitle>Recent</SectionTitle>
+        {recent.data?.length ? (
+          <FoodList foods={recent.data} onOpen={onOpen} />
+        ) : recent.isPending ? null : (
+          <p className="border-y border-line py-3 text-sm text-ink-muted">Foods you log show up here, so you can add them again in one tap.</p>
+        )}
+      </section>
+      <section>
+        <SectionTitle aside="Estimated from home recipes">Filipino dishes</SectionTitle>
+        {dishes.isError ? <Problem onRetry={() => void dishes.refetch()} /> : dishes.data ? <FoodList foods={dishes.data} onOpen={onOpen} /> : null}
+      </section>
+    </div>
+  );
+}
+
+function Problem({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="rounded-card border border-line px-4 py-6 text-center">
+      <p className="font-medium">Couldn&apos;t load foods</p>
+      <p className="mt-1 text-sm text-ink-muted">Check your connection, then try again.</p>
+      <button type="button" onClick={onRetry} className="mt-3 h-11 px-4 text-sm font-medium text-accent">
+        Try again
+      </button>
+    </div>
   );
 }
 
@@ -105,11 +150,11 @@ function FoodList({ foods, onOpen }: { foods: CatalogFood[]; onOpen: (f: Catalog
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{food.name}</span>
                 <span className="block text-sm text-ink-muted">
-                  {serving ? `${serving.name} · ${formatGrams(serving.grams)} g` : null}
+                  {serving ? `${serving.name} · ${formatGrams(serving.grams)} g` : "Per 100 g"}
                   {food.verification === "estimated" ? " · Estimated" : null}
                 </span>
               </span>
-              {kcal !== null ? <span className="text-sm font-semibold">{formatKcal(kcal)} kcal</span> : null}
+              <span className="text-sm font-semibold">{formatKcal(kcal ?? food.per100.calories)} kcal</span>
             </button>
           </li>
         );
