@@ -136,3 +136,26 @@ export async function deleteEntry(id: string): Promise<void> {
   const { error } = await getSupabase().rpc("delete_food_log_item", { p_id: id });
   if (error) throw error;
 }
+
+export type DailyTotal = {
+  logDate: string;
+  calories: number;
+  protein_g: number;
+  carbohydrates_g: number;
+  fat_g: number;
+  itemCount: number;
+};
+
+// One row per day in [from, to], zeros for days with nothing logged.
+export async function fetchDailyTotals(from: string, to: string): Promise<DailyTotal[]> {
+  const { data, error } = await getSupabase().rpc("daily_nutrition_totals", { p_from: from, p_to: to });
+  if (error) throw error;
+  return data.map((d) => ({
+    logDate: d.log_date,
+    calories: d.calories,
+    protein_g: d.protein_g,
+    carbohydrates_g: d.carbohydrates_g,
+    fat_g: d.fat_g,
+    itemCount: d.item_count,
+  }));
+}

@@ -66,9 +66,11 @@ Rules that came out of building them:
 
 `components/ui`: `ProgressBar` (aria progressbar, ink past 100%), `Sheet` (native `<dialog>`, so focus trapping and Escape need no library), `Stepper` (half-serving steps, 44 px buttons), `ChoiceGroup` (radio semantics, wraps instead of scrolling sideways). `components/shared/screen.tsx`: `ScreenHeader`, `SectionTitle`, `SampleDataNote`.
 
-## Sample data during design
+## Real data only
 
-Every screen except Progress reads and writes Supabase. Progress still uses `src/fixtures/sample-data.ts`: food values there come from the real catalog, but the history and targets are made up, so the screen carries a "Sample data" note. Wiring it means deleting the fixture import and the note.
+Every screen reads and writes Supabase; the design-time fixtures are gone. Loading shows nothing rather than placeholder numbers, errors say what happened with a Try again button, and empty states say why they are empty and what to do next.
+
+On Progress, a day with nothing logged is a flat grey mark on the week chart and a dashed cell on the month grid, never a 0 kcal bar.
 
 ## Motion
 

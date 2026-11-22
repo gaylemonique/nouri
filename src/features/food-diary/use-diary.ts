@@ -22,6 +22,7 @@ export const diaryKeys = {
   all: (userId: string) => ["diary", userId] as const,
   day: (userId: string, logDate: string) => ["diary", userId, logDate] as const,
   recent: (userId: string) => ["recent-foods", userId] as const,
+  totals: (userId: string) => ["daily-totals", userId] as const,
 };
 
 export type DayEntry = DiaryEntry & { status: "saved" | OutboxEntry["status"] };
@@ -82,6 +83,7 @@ function send(queryClient: QueryClient, userId: string, entry: OutboxEntry) {
       }
       outbox.remove(entry.id);
       void queryClient.invalidateQueries({ queryKey: diaryKeys.recent(userId) });
+      void queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) });
     })
     .catch(() => outbox.setStatus(entry.id, "failed"));
 }
@@ -140,7 +142,8 @@ type Snapshot = { key: readonly unknown[]; previous: DiaryEntry[] | undefined };
 
 export function useUpdateEntry(logDate: string) {
   const queryClient = useQueryClient();
-  const key = diaryKeys.day(useUserId(), logDate);
+  const userId = useUserId();
+  const key = diaryKeys.day(userId, logDate);
   return useMutation({
     mutationFn: (input: UpdateEntryInput) => updateEntry(input),
     onMutate: async (input): Promise<Snapshot> => {
@@ -173,12 +176,14 @@ export function useUpdateEntry(logDate: string) {
     onSuccess: (row) => {
       queryClient.setQueryData<DiaryEntry[]>(key, (old) => old?.map((e) => (e.id === row.id ? withServerNumbers(e, row) : e)));
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) }),
   });
 }
 
 export function useDeleteEntry(logDate: string) {
   const queryClient = useQueryClient();
-  const key = diaryKeys.day(useUserId(), logDate);
+  const userId = useUserId();
+  const key = diaryKeys.day(userId, logDate);
   return useMutation({
     mutationFn: (id: string) => deleteEntry(id),
     onMutate: async (id): Promise<Snapshot> => {
@@ -192,5 +197,6 @@ export function useDeleteEntry(logDate: string) {
       const name = context?.previous?.find((e) => e.id === id)?.foodName ?? "the entry";
       outbox.notify(`Couldn't remove ${name}. It is still in your diary. Try again.`);
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: diaryKeys.totals(userId) }),
   });
 }

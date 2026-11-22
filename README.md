@@ -11,8 +11,9 @@ A mobile food diary for Android and iOS. You log what you eat, Nouri works out c
 | 00 | Next.js static export, Capacitor with Android, Tailwind, env validation, Supabase client | Done |
 | 01 | All five screens and the food sheet designed and interactive, on labelled sample data (see `docs/design.md`) | Done |
 | 03 | Email and password sign-in, onboarding (name and daily targets), Profile reads and edits real targets | Done, see [Sign-in](#sign-in) for what waits on an email sender |
-| 05 | Home, Diary, Discover and the food sheet on real data: catalog search, adding, editing and removing entries with optimistic updates | Done. Progress still shows sample data |
-| 06 to 08 | Progress on real data, offline sync, store builds | Not started |
+| 05 | Home, Diary, Discover and the food sheet on real data: catalog search, adding, editing and removing entries with optimistic updates | Done |
+| 06 | Progress on real data: 7-day calories against target, 30-day grid of days within target, today's macro split | Done |
+| 07, 08 | Offline sync (SQLite queue), store builds | Not started |
 
 The backend was built first so the screens can be wired to real data from day one instead of mock numbers.
 
@@ -72,6 +73,12 @@ Discover searches the catalog with `search_foods` (English and Tagalog names, sm
 
 Not yet: the outbox lives in memory, so closing the app loses unsaved entries and nothing retries by itself. The SQLite sync queue (phase 07) replaces it.
 
+## Progress
+
+Progress reads the last 30 days with `daily_nutrition_totals` in one request; today comes from the diary cache so it matches Home and includes entries still saving. The rules for a finished day live in `src/domain/goals/day-status.ts`: within target means within 10% either side, and days with nothing logged are left out of averages and counts (an empty day means not tracked, not 0 kcal). Today is drawn but not counted.
+
+Every day is compared with the current calorie target; there is no target history yet.
+
 ## Sign-in
 
 Email and password through Supabase Auth. There is no server, so the app decides on the device which screen to show (`src/features/auth/auth-gate.tsx`): no session goes to `/sign-in/`, a profile without `onboarding_completed_at` goes to `/onboarding/`. That only picks a screen; RLS is what keeps one person's data from another.
@@ -121,7 +128,6 @@ src/
   components/        ui/ primitives, navigation/, shared/ screen parts
   features/          auth, dashboard, food-diary, food-search, nutrition-history, profile
   services/repositories/  the only code that calls Supabase
-  fixtures/          labelled sample data, used only by Progress now
   hooks/ utils/      device date, number and date formatting
   domain/            nutrition formula (client copy of the server's), macro split for goals
   infrastructure/    Supabase client and env validation

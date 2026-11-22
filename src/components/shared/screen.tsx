@@ -12,16 +12,6 @@ export function ScreenHeader({ title, kicker, action }: { title: string; kicker?
   );
 }
 
-// Shown on every screen that renders prototype data, until the screen reads
-// from Supabase. Removing it is part of wiring the screen.
-export function SampleDataNote({ children }: { children: ReactNode }) {
-  return (
-    <p className="mb-4 rounded-lg bg-line/50 px-3 py-2 text-xs leading-relaxed text-ink-muted">
-      <span className="font-semibold text-ink">Sample data.</span> {children}
-    </p>
-  );
-}
-
 export function SectionTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="mb-2 flex items-baseline justify-between gap-3">
